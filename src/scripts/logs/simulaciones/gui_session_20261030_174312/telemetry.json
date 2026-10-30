@@ -1,0 +1,482 @@
+[
+  {
+    "sim_time": 0.1,
+    "active_neutrons": 1299,
+    "control_rods_pct": 51.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 290.36083333333335,
+    "keff": 1.299,
+    "electric_power_mwe": 21.433500000000002,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.2,
+    "active_neutrons": 1818,
+    "control_rods_pct": 53.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 290.86583333333334,
+    "keff": 1.3995381062355658,
+    "electric_power_mwe": 29.997000000000003,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.30000000000000004,
+    "active_neutrons": 2316,
+    "control_rods_pct": 54.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 291.50916666666666,
+    "keff": 1.273927392739274,
+    "electric_power_mwe": 38.214000000000006,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.4,
+    "active_neutrons": 3156,
+    "control_rods_pct": 56.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 292.3858333333333,
+    "keff": 1.3626943005181347,
+    "electric_power_mwe": 52.074000000000005,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.5,
+    "active_neutrons": 4266,
+    "control_rods_pct": 57.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 293.5708333333333,
+    "keff": 1.3517110266159695,
+    "electric_power_mwe": 70.38900000000001,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.6,
+    "active_neutrons": 5919,
+    "control_rods_pct": 59.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 295.215,
+    "keff": 1.3874824191279886,
+    "electric_power_mwe": 97.6635,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.7,
+    "active_neutrons": 8019,
+    "control_rods_pct": 60.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 297.4425,
+    "keff": 1.3547896604156107,
+    "electric_power_mwe": 132.31350000000003,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.7999999999999999,
+    "active_neutrons": 10965,
+    "control_rods_pct": 62.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 300.48833333333334,
+    "keff": 1.3673774784885897,
+    "electric_power_mwe": 180.9225,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.8999999999999999,
+    "active_neutrons": 14814,
+    "control_rods_pct": 63.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 304.60333333333335,
+    "keff": 1.3510259917920657,
+    "electric_power_mwe": 244.43100000000004,
+    "scram_active": false
+  },
+  {
+    "sim_time": 0.9999999999999999,
+    "active_neutrons": 20034,
+    "control_rods_pct": 65.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 310.16833333333335,
+    "keff": 1.3523693803159174,
+    "electric_power_mwe": 330.56100000000004,
+    "scram_active": false
+  },
+  {
+    "sim_time": 1.0999999999999999,
+    "active_neutrons": 26808,
+    "control_rods_pct": 66.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 317.615,
+    "keff": 1.338125187181791,
+    "electric_power_mwe": 442.33200000000005,
+    "scram_active": false
+  },
+  {
+    "sim_time": 1.2,
+    "active_neutrons": 36330,
+    "control_rods_pct": 68.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 327.70666666666665,
+    "keff": 1.3551924798567592,
+    "electric_power_mwe": 599.445,
+    "scram_active": false
+  },
+  {
+    "sim_time": 1.3,
+    "active_neutrons": 48813,
+    "control_rods_pct": 69.5,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 341.2658333333333,
+    "keff": 1.3436003303055326,
+    "electric_power_mwe": 805.4145000000001,
+    "scram_active": false
+  },
+  {
+    "sim_time": 1.4000000000000001,
+    "active_neutrons": 65814,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 359.5475,
+    "keff": 1.3482883658041915,
+    "electric_power_mwe": 1085.931,
+    "scram_active": true
+  },
+  {
+    "sim_time": 1.5000000000000002,
+    "active_neutrons": 88803,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 384.21500000000003,
+    "keff": 1.3493025799981766,
+    "electric_power_mwe": 1465.2495000000004,
+    "scram_active": true
+  },
+  {
+    "sim_time": 1.6000000000000003,
+    "active_neutrons": 119220,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 417.3316666666667,
+    "keff": 1.3425222120874294,
+    "electric_power_mwe": 1967.13,
+    "scram_active": true
+  },
+  {
+    "sim_time": 1.7000000000000004,
+    "active_neutrons": 160776,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 461.99166666666673,
+    "keff": 1.348565676899849,
+    "electric_power_mwe": 2652.804,
+    "scram_active": true
+  },
+  {
+    "sim_time": 1.8000000000000005,
+    "active_neutrons": 216765,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 522.2041666666668,
+    "keff": 1.348242274966413,
+    "electric_power_mwe": 3576.6225,
+    "scram_active": true
+  },
+  {
+    "sim_time": 1.9000000000000006,
+    "active_neutrons": 291663,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 603.2216666666668,
+    "keff": 1.3455262611583974,
+    "electric_power_mwe": 4812.4395,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.0000000000000004,
+    "active_neutrons": 393927,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 712.6458333333335,
+    "keff": 1.3506238364139436,
+    "electric_power_mwe": 6499.795500000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.1000000000000005,
+    "active_neutrons": 532569,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 860.5816666666668,
+    "keff": 1.3519484574553153,
+    "electric_power_mwe": 8787.388500000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.2000000000000006,
+    "active_neutrons": 717918,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 1060.0033333333336,
+    "keff": 1.3480281428321963,
+    "electric_power_mwe": 11845.647,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.3000000000000007,
+    "active_neutrons": 968589,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 1329.0558333333336,
+    "keff": 1.3491638320811012,
+    "electric_power_mwe": 15981.718500000003,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.400000000000001,
+    "active_neutrons": 1306635,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 1692.0100000000002,
+    "keff": 1.3490087126737966,
+    "electric_power_mwe": 21559.4775,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.500000000000001,
+    "active_neutrons": 1762800,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 2181.6766666666667,
+    "keff": 1.3491143280258067,
+    "electric_power_mwe": 29086.2,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.600000000000001,
+    "active_neutrons": 2379123,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 2842.5441666666666,
+    "keff": 1.3496272974812797,
+    "electric_power_mwe": 39255.529500000004,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.700000000000001,
+    "active_neutrons": 3213258,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 3735.1158333333333,
+    "keff": 1.3506060846791024,
+    "electric_power_mwe": 53018.75700000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.800000000000001,
+    "active_neutrons": 4341564,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 4941.105833333333,
+    "keff": 1.3511408047533064,
+    "electric_power_mwe": 71635.80600000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 2.9000000000000012,
+    "active_neutrons": 5860503,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 6569.023333333333,
+    "keff": 1.3498598661680445,
+    "electric_power_mwe": 96698.29950000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.0000000000000013,
+    "active_neutrons": 7908171,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 8765.7375,
+    "keff": 1.349401408036136,
+    "electric_power_mwe": 130484.82150000002,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.1000000000000014,
+    "active_neutrons": 10674423,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 11730.855,
+    "keff": 1.3497966849730487,
+    "electric_power_mwe": 176127.97950000002,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.2000000000000015,
+    "active_neutrons": 14411106,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 15733.939999999999,
+    "keff": 1.3500594833088402,
+    "electric_power_mwe": 237783.24900000004,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.3000000000000016,
+    "active_neutrons": 19454082,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 21137.851666666666,
+    "keff": 1.3499367779266906,
+    "electric_power_mwe": 320992.35300000006,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.4000000000000017,
+    "active_neutrons": 26264472,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 28433.538333333334,
+    "keff": 1.350075115340832,
+    "electric_power_mwe": 433363.78800000006,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.5000000000000018,
+    "active_neutrons": 35456259,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 38282.49916666667,
+    "keff": 1.3499703706208144,
+    "electric_power_mwe": 585028.2735000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.600000000000002,
+    "active_neutrons": 47852142,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 51574.760833333334,
+    "keff": 1.3496105722828795,
+    "electric_power_mwe": 789560.3430000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.700000000000002,
+    "active_neutrons": 64617744,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 69524.13416666667,
+    "keff": 1.3503626232656418,
+    "electric_power_mwe": 1066192.776,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.800000000000002,
+    "active_neutrons": 87237354,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 93756.73250000001,
+    "keff": 1.3500526109360922,
+    "electric_power_mwe": 1439416.341,
+    "scram_active": true
+  },
+  {
+    "sim_time": 3.900000000000002,
+    "active_neutrons": 117770370,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 126470.72416666668,
+    "keff": 1.3499993362934872,
+    "electric_power_mwe": 1943211.105,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.000000000000002,
+    "active_neutrons": 158997714,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 170636.75583333336,
+    "keff": 1.3500655045916898,
+    "electric_power_mwe": 2623462.281,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.100000000000001,
+    "active_neutrons": 214646364,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 230260.74583333335,
+    "keff": 1.3499965414597093,
+    "electric_power_mwe": 3541665.0060000005,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.200000000000001,
+    "active_neutrons": 289792998,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 310758.80083333334,
+    "keff": 1.3500950707928134,
+    "electric_power_mwe": 4781584.467,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.300000000000001,
+    "active_neutrons": 391196367,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 419424.4583333334,
+    "keff": 1.3499165600957688,
+    "electric_power_mwe": 6454740.055500001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.4,
+    "active_neutrons": 528101283,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 566119.2591666668,
+    "keff": 1.3499646917733261,
+    "electric_power_mwe": 8713671.1695,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.5,
+    "active_neutrons": 712932696,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 764156.1191666668,
+    "keff": 1.3499923574319361,
+    "electric_power_mwe": 11763389.484000001,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.6,
+    "active_neutrons": 962448045,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 1031502.7983333333,
+    "keff": 1.349984438082217,
+    "electric_power_mwe": 15880392.742500002,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.699999999999999,
+    "active_neutrons": 1299319119,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 1392424.7758333334,
+    "keff": 1.3500148145659125,
+    "electric_power_mwe": 21438765.4635,
+    "scram_active": true
+  },
+  {
+    "sim_time": 4.799999999999999,
+    "active_neutrons": 1754068755,
+    "control_rods_pct": 100.0,
+    "coolant_flow": 18000.0,
+    "coolant_temp_celsius": 1879666.0966666667,
+    "keff": 1.349990721563453,
+    "electric_power_mwe": 28942134.4575,
+    "scram_active": true
+  }
+]
