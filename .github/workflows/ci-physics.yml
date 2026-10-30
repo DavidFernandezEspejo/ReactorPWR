@@ -1,0 +1,58 @@
+name: CI/CD Pipeline - Simulador PWR
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validar-simulacion:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Clonar el repositorio
+      uses: actions/checkout@v4
+
+    - name: 2. Preparar Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: 3. Instalar librerías de sistema para Pygame (SDL2)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+
+    - name: 4. Instalar dependencias de Python
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install ruff mypy
+
+    - name: 5. Verificaciones rapidas de entorno (PDF + pygame-ce)
+      env:
+        SDL_VIDEODRIVER: dummy
+      run: |
+        if ls docs/*.pdf >/dev/null 2>&1; then
+          python src/scripts/read_pdf_spec.py
+        else
+          echo "No hay PDF versionado en docs/, se omite lectura automatica"
+        fi
+        python -c "import pygame; print('pygame-ce', pygame.version.ver)"
+
+    - name: 6. Análisis estático y Tipado
+      run: |
+        ruff check src/ tests/
+        PYTHONPATH=. mypy src/ --ignore-missing-imports
+
+    - name: 7. Pruebas unitarias en modo Headless (bloqueante para cada push)
+      env:
+        SDL_VIDEODRIVER: dummy
+      run: |
+        mkdir -p logs/simulaciones/
+        PYTHONPATH=. python -m pytest tests/ -v
+
+    - name: 8. Archivar Logs de Simulaciones
+      uses: actions/upload-artifact@v4
+      with:
+        name: logs-simulaciones-${{ github.run_id }}
+        path: logs/
