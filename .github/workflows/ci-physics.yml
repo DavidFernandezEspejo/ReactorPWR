@@ -2,9 +2,7 @@ name: CI/CD Pipeline - Simulador PWR
 
 on:
   push:
-    branches: [ "main", "feature/*" ]
   pull_request:
-    branches: [ "main", "feature/*" ]
 
 jobs:
   validar-simulacion:
@@ -46,7 +44,7 @@ jobs:
         ruff check src/ tests/
         PYTHONPATH=. mypy src/ --ignore-missing-imports
 
-    - name: 7. Pruebas unitarias en modo Headless
+    - name: 7. Pruebas unitarias en modo Headless (bloqueante para cada push)
       env:
         SDL_VIDEODRIVER: dummy
       run: |
