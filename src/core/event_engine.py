@@ -1,5 +1,6 @@
 import heapq
-from typing import Optional, Callable
+from collections.abc import Callable
+
 from src.events.base_event import Evento
 from src.models.entities import CoreState
 from src.utils.logger import SimulationLogger
@@ -9,7 +10,7 @@ class EventEngine:
     """Orquestador de tiempo discreto basado en cola de prioridades."""
 
     def __init__(
-        self, state: CoreState, logger: Optional[SimulationLogger] = None
+        self, state: CoreState, logger: SimulationLogger | None = None
     ) -> None:
         self.state = state
         self.reloj_global_t: float = 0.0

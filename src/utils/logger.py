@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 class SimulationLogger:
@@ -24,12 +24,12 @@ class SimulationLogger:
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-        self.telemetry_history: list[Dict[str, Any]] = []
+        self.telemetry_history: list[dict[str, Any]] = []
 
     def log_event(self, event_name: str, details: str) -> None:
         self.logger.info(f"EVENTO [{event_name}]: {details}")
 
-    def log_state(self, state_dict: Dict[str, Any]) -> None:
+    def log_state(self, state_dict: dict[str, Any]) -> None:
         self.telemetry_history.append(state_dict)
 
     def export_telemetry(self) -> Path:

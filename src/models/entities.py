@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-# Definimos variables
+
 class CoreState(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 

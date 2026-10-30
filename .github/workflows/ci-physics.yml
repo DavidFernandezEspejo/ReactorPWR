@@ -43,7 +43,7 @@ jobs:
 
     - name: 6. Análisis estático y Tipado
       run: |
-        ruff check src/ tests/ || true
+        ruff check src/ tests/
         PYTHONPATH=. mypy src/ --ignore-missing-imports
 
     - name: 7. Pruebas unitarias en modo Headless

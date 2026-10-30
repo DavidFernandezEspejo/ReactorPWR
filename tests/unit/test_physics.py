@@ -5,6 +5,7 @@ from src.core.physics import (
 )
 from src.models.entities import CoreState
 
+
 # Suite de tests automáticos
 def test_thermodynamics_laws():
     # Simulamos el calor generado por 1000 fisiones

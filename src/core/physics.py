@@ -1,22 +1,30 @@
+from typing import Any
+
 import numpy as np
 
+_numba_njit: Any
 try:
-    from numba import njit
+    from numba import njit as _numba_njit
 except ModuleNotFoundError:
+    _numba_njit = None
+
+
+def jit_decorator(*args, **kwargs):
     # Fallback para entornos donde numba no esté disponible.
-    def njit(*args, **kwargs):
+    if _numba_njit is None:
         def _decorator(func):
             return func
 
         return _decorator
 
+    return _numba_njit(*args, **kwargs)
+
 # Usamos njit para ejecutar el código en tiempo real a lenguaje máquina
-@njit(fastmath=True)
+@jit_decorator(fastmath=True)
 def simulate_neutron_batch(
     initial_neutrons: int, control_rods_pct: float
 ) -> tuple[int, int]:
     p_fision = 0.45
-    p_fuga = 0.15
     p_captura = 0.35 + (control_rods_pct / 100.0) * 0.15
 
     producidos = 0
