@@ -1,0 +1,26 @@
+@startuml
+skinparam style strictuml
+
+actor "Developer" as Dev
+participant "GitHub" as GH
+participant "Workflow\nci-physics.yml" as CI
+participant "pytest" as Pytest
+participant "Artifacts" as Art
+
+Dev -> GH : push / open pull request
+GH -> CI : trigger workflow
+CI -> CI : setup python + deps
+CI -> CI : run ruff + mypy
+CI -> Pytest : python -m pytest tests/ -v
+
+alt tests OK
+  Pytest --> CI : exit 0
+  CI -> Art : upload logs/
+  CI --> GH : status success
+else tests fail
+  Pytest --> CI : non-zero
+  CI --> GH : status failed
+end
+
+@enduml
+

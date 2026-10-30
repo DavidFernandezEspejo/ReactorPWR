@@ -91,3 +91,14 @@ Este documento describe todas las clases Python actuales del repositorio para fa
   - define el suceso termico-neutronico;
   - itera hasta completar tiempo o cierre de ventana.
 
+## Continuidad prevista de clases (siguientes iteraciones)
+
+- `CoreState`: se mantiene como contrato principal de estado para simulacion y visualizacion.
+- `Evento`: se mantiene para desacoplar cada suceso discreto y permitir nuevos eventos (fallos, mantenimiento, escenarios).
+- `EventEngine`: se mantiene como orquestador central del reloj discreto.
+- `SimulationLogger`: se mantiene para trazabilidad academica y analisis post-ejecucion.
+- `ReactorDashboard`: se mantiene como interfaz operacional base para demos y validacion visual.
+- `CoreView`: se mantiene como componente grafico reutilizable dentro del dashboard.
+
+No hay clases candidatas a eliminar en el estado actual; todas tienen uso operativo o de extensibilidad directa.
+

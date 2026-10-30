@@ -77,10 +77,16 @@ pytest -q
 - Diagramas estructurales y de comportamiento:
   - `docs/diagrams/structural/puml/diagramaclases.puml`
   - `docs/diagrams/structural/puml/runtime_components.puml`
+  - `docs/diagrams/structural/puml/module_dependencies.puml`
   - `docs/diagrams/behavioral/puml/control_loop.puml`
   - `docs/diagrams/behavioral/puml/scram_state_machine.puml`
   - `docs/diagrams/behavioral/puml/logging_flow.puml`
+  - `docs/diagrams/behavioral/puml/ci_validation_flow.puml`
   - `docs/diagrams/diagramasecuencia.puml`
+
+Versiones PNG de diagramas:
+- `docs/diagrams/behavioral/png/`
+- `docs/diagrams/structural/png/`
 
 Si quieres validar la GUI en entorno sin pantalla (CI/headless), usa:
 
@@ -97,6 +103,8 @@ cd /home/david/PycharmProjects/ReactorPWR
 source .venv/bin/activate
 python src/scripts/run_gui.py
 ```
+
+Nota: el archivo plantilla `main.py` de PyCharm se ha eliminado para evitar doble punto de entrada.
 
 ## Workflow limpio de ramas (recomendado para fusion a `main`)
 

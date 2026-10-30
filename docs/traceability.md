@@ -31,11 +31,13 @@ Este documento resume la correspondencia entre la especificacion del PDF de `doc
 - Bucle de control: `docs/diagrams/behavioral/puml/control_loop.puml`
 - Maquina de estados SCRAM: `docs/diagrams/behavioral/puml/scram_state_machine.puml`
 - Flujo de logging y telemetria: `docs/diagrams/behavioral/puml/logging_flow.puml`
+- Flujo de validacion CI: `docs/diagrams/behavioral/puml/ci_validation_flow.puml`
 - Diagrama de clases: `docs/diagrams/structural/puml/diagramaclases.puml`
 - Componentes de ejecucion: `docs/diagrams/structural/puml/runtime_components.puml`
+- Dependencias entre modulos: `docs/diagrams/structural/puml/module_dependencies.puml`
 
 ## Incongruencias o huecos pendientes
 
-1. `simulate_neutron_batch` define `p_fuga` pero no la usa de forma explicita; funcionalmente hay tres salidas, pero la probabilidad de fuga queda implicita en el `else`.
+1. `simulate_neutron_batch` no separa en variable explicita la probabilidad de fuga; la tercera salida esta representada implicitamente en el `else`.
 2. No existe aun un modulo formal para ejecutar automaticamente los 4 experimentos del PDF y comparar resultados en lote.
 3. La simulacion es consistente con el alcance academico simplificado, pero no modela fisica de reactor de alta fidelidad (intencionadamente).
