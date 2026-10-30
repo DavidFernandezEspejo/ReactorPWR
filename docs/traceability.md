@@ -14,6 +14,26 @@ Este documento resume la correspondencia entre la especificacion del PDF de `doc
 | Visualizacion operacional | `src/visualization/dashboard.py` | Cubierto |
 | Diseno de experimentos (4 escenarios) | No hay runner de experimentos dedicado aun | Parcial |
 
+## Cobertura de tests por clase
+
+| Clase | Pruebas | Estado |
+|---|---|---|
+| `CoreState` | `tests/unit/test_entities.py` | Cubierto |
+| `Evento` | `tests/unit/test_events.py` | Cubierto |
+| `EventEngine` | `tests/unit/test_event_engine.py` | Cubierto |
+| `SimulationLogger` | `tests/unit/test_logger.py` | Cubierto |
+| `ReactorDashboard` | `tests/unit/test_dashboard.py` | Cubierto |
+| `CoreView` | `tests/unit/test_core_view.py` | Cubierto |
+
+## Diagramas disponibles
+
+- Secuencia general: `docs/diagrams/diagramasecuencia.puml`
+- Bucle de control: `docs/diagrams/behavioral/puml/control_loop.puml`
+- Maquina de estados SCRAM: `docs/diagrams/behavioral/puml/scram_state_machine.puml`
+- Flujo de logging y telemetria: `docs/diagrams/behavioral/puml/logging_flow.puml`
+- Diagrama de clases: `docs/diagrams/structural/puml/diagramaclases.puml`
+- Componentes de ejecucion: `docs/diagrams/structural/puml/runtime_components.puml`
+
 ## Incongruencias o huecos pendientes
 
 1. `simulate_neutron_batch` define `p_fuga` pero no la usa de forma explicita; funcionalmente hay tres salidas, pero la probabilidad de fuga queda implicita en el `else`.

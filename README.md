@@ -13,7 +13,8 @@ El proyecto implementa los bloques principales descritos en el PDF de especifica
 
 - Dependencias instalables desde `requirements.txt`.
 - Lectura del PDF validada con `pypdf`.
-- Test unitarios pasando (`pytest -q`).
+- Suite inicial de tests para todas las clases principales (`pytest -q`).
+- CI en GitHub Actions ejecutando tests en cada `push` y `pull_request`.
 - Rama `feature/arquitectura-diagramas` por delante de `main` sin conflictos detectados en local.
 
 ## Requisitos
@@ -62,6 +63,24 @@ cd /home/david/PycharmProjects/ReactorPWR
 source .venv/bin/activate
 pytest -q
 ```
+
+## Integracion continua
+
+- Workflow: `.github/workflows/ci-physics.yml`.
+- Se ejecuta en cada `push` y cada `pull_request`.
+- Bloquea merges si falla `pytest`.
+
+## Documentacion de arquitectura
+
+- Guia de clases (onboarding): `docs/classes_reference.md`.
+- Trazabilidad PDF -> codigo: `docs/traceability.md`.
+- Diagramas estructurales y de comportamiento:
+  - `docs/diagrams/structural/puml/diagramaclases.puml`
+  - `docs/diagrams/structural/puml/runtime_components.puml`
+  - `docs/diagrams/behavioral/puml/control_loop.puml`
+  - `docs/diagrams/behavioral/puml/scram_state_machine.puml`
+  - `docs/diagrams/behavioral/puml/logging_flow.puml`
+  - `docs/diagrams/diagramasecuencia.puml`
 
 Si quieres validar la GUI en entorno sin pantalla (CI/headless), usa:
 

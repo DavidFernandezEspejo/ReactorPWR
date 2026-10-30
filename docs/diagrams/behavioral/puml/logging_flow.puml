@@ -1,0 +1,24 @@
+@startuml
+skinparam style strictuml
+
+participant "run_gui" as Script
+participant "EventEngine" as Engine
+participant "Evento" as Event
+participant "CoreState" as State
+participant "SimulationLogger" as Logger
+
+Script -> Engine : schedule_event(...)
+Script -> Engine : step()
+Engine -> Event : ejecutar()
+Event --> Engine : callback completado
+Engine -> State : sim_time = tiempo_ejecucion
+Engine -> Logger : log_event(nombre, detalle)
+Engine -> Logger : log_state(state.model_dump())
+
+loop fin simulacion
+  Script -> Logger : export_telemetry()
+  Logger --> Script : telemetry.json
+end
+
+@enduml
+

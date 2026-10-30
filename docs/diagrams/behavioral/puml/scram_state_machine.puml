@@ -1,0 +1,20 @@
+@startuml
+skinparam style strictuml
+
+[*] --> OperacionNormal
+
+OperacionNormal --> AjusteBarras : keff > 1.05 o keff < 0.95
+AjusteBarras --> OperacionNormal : keff en banda [0.95, 1.05]
+
+OperacionNormal --> SCRAM : coolant_temp_celsius > 350.0
+AjusteBarras --> SCRAM : coolant_temp_celsius > 350.0
+
+SCRAM : scram_active = true
+SCRAM : control_rods_pct = 100%
+SCRAM --> Enfriamiento : coolant_temp_celsius <= 350.0
+
+Enfriamiento --> OperacionNormal : operador reduce barras < 100%
+Enfriamiento --> SCRAM : coolant_temp_celsius > 350.0
+
+@enduml
+
