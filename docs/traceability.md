@@ -10,13 +10,15 @@ Este documento resume la correspondencia entre la especificacion del PDF de `doc
 | Sucesos discretos y reloj global | `src/events/base_event.py`, `src/core/event_engine.py` | Cubierto |
 | Variables de estado (`t`, neutrones, barras, temperatura, `keff`, potencia) | `CoreState` en `src/models/entities.py` | Cubierto |
 | Control periodico de barras y SCRAM | `src/scripts/run_gui.py` + validador de `CoreState` | Cubierto |
+| SCRAM bloquea nuevas fisiones | `interaction_probabilities(..., scram_active=True)` | Cubierto |
 | Salidas de potencia electrica y telemetria | `src/core/physics.py`, `src/utils/logger.py` | Cubierto |
 | Visualizacion operacional | `src/visualization/dashboard.py` | Cubierto |
-| Diseno de experimentos (4 escenarios) | No hay runner de experimentos dedicado aun | Parcial |
+| Diseno de experimentos (4 escenarios) | `src/scripts/run_experiments.py` | Cubierto |
+| Resumen markdown de la spec | `docs/spec_summary.md` | Cubierto |
 
 ## Cobertura de tests por clase
 
-| Clase | Pruebas | Estado |
+| Clase / modulo | Pruebas | Estado |
 |---|---|---|
 | `CoreState` | `tests/unit/test_entities.py` | Cubierto |
 | `Evento` | `tests/unit/test_events.py` | Cubierto |
@@ -24,6 +26,7 @@ Este documento resume la correspondencia entre la especificacion del PDF de `doc
 | `SimulationLogger` | `tests/unit/test_logger.py` | Cubierto |
 | `ReactorDashboard` | `tests/unit/test_dashboard.py` | Cubierto |
 | `CoreView` | `tests/unit/test_core_view.py` | Cubierto |
+| Fisica / SCRAM | `tests/unit/test_physics.py` | Cubierto |
 
 ## Diagramas disponibles
 
@@ -38,6 +41,6 @@ Este documento resume la correspondencia entre la especificacion del PDF de `doc
 
 ## Incongruencias o huecos pendientes
 
-1. `simulate_neutron_batch` no separa en variable explicita la probabilidad de fuga; la tercera salida esta representada implicitamente en el `else`.
-2. No existe aun un modulo formal para ejecutar automaticamente los 4 experimentos del PDF y comparar resultados en lote.
-3. La simulacion es consistente con el alcance academico simplificado, pero no modela fisica de reactor de alta fidelidad (intencionadamente).
+1. El modelo sigue siendo academico/simplificado (no fidelidad de planta real).
+2. La vida media del neutron se estima con muestreo exponencial, no con entidades individuales por neutron.
+3. El ejecutable Windows (`dist/ReactorPWR.exe`) es un artefacto local de build, no se versiona en Git.

@@ -4,4 +4,5 @@ pydantic>=2.14,<3
 pygame-ce>=2.5
 pypdf>=6.0
 pytest>=9.0
+pytest-cov>=6.0
 
