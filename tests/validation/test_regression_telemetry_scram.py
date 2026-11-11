@@ -5,8 +5,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from src.core.control_loop import apply_thermal_neutron_step
 from src.models.entities import CoreState
-from src.scripts.run_gui import apply_thermal_neutron_step
 
 
 @pytest.mark.validation

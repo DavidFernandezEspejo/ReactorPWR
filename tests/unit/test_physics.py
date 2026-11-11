@@ -1,5 +1,6 @@
 import numpy as np
 
+from src.core.control_loop import apply_thermal_neutron_step
 from src.core.physics import (
     calculate_keff,
     calculate_thermodynamics,
@@ -8,7 +9,6 @@ from src.core.physics import (
     simulate_neutron_batch,
 )
 from src.models.entities import CoreState
-from src.scripts.run_gui import apply_thermal_neutron_step
 
 
 def test_thermodynamics_laws():
@@ -89,6 +89,21 @@ def test_post_scram_power_and_neutrons_decay():
     assert state.active_neutrons < neutrons_before
     assert state.electric_power_mwe < power_before
     assert state.keff < 1.0
+    # Fuente minima: no se apaga del todo.
+    assert state.active_neutrons >= 12
+
+
+def test_live_source_prevents_total_shutdown():
+    np.random.seed(3)
+    state = CoreState(
+        active_neutrons=0,
+        control_rods_pct=40.0,
+        scram_active=False,
+        coolant_temp_celsius=290.0,
+    )
+    apply_thermal_neutron_step(state)
+    assert state.active_neutrons >= 80
+    assert state.keff > 0.0
 
 
 def test_interaction_probabilities_explicit_leakage():

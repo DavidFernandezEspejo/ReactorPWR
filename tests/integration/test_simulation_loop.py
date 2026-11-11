@@ -7,9 +7,9 @@ import json
 import numpy as np
 import pytest
 
+from src.core.control_loop import apply_thermal_neutron_step
 from src.core.event_engine import EventEngine
 from src.models.entities import CoreState
-from src.scripts.run_gui import apply_thermal_neutron_step
 from src.utils.logger import SimulationLogger
 from src.visualization.dashboard import ReactorDashboard
 

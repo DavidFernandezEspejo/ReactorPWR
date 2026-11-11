@@ -9,14 +9,16 @@ from src.visualization.core_views import CoreView
 def test_core_view_draw_modifies_surface_pixels() -> None:
     pygame.init()
     try:
-        surface = pygame.Surface((900, 700))
+        surface = pygame.Surface((1000, 700))
         surface.fill((0, 0, 0))
 
-        view = CoreView(x=500, y=100, size=250)
-        view.draw(surface, CoreState())
+        view = CoreView(x=50, y=20, width=900, height=620)
+        state = CoreState(active_neutrons=40, control_rods_pct=50.0)
+        view.draw(surface, state)
 
-        # Punto dentro del nucleo que deberia haberse coloreado.
-        assert surface.get_at((550, 150)) != (0, 0, 0, 255)
+        # Vasija/combustible coloreados y neutrones 1:1 con el contador.
+        assert surface.get_at((180, 280)) != (0, 0, 0, 255)
+        assert len(view._rod_rects) == 2
+        assert view.visible_neutrons == 40
     finally:
         pygame.quit()
-

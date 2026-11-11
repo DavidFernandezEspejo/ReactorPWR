@@ -18,13 +18,21 @@ El proyecto implementa los bloques principales descritos en el PDF de especifica
 1. Genera el `.exe` (solo la primera vez o tras cambios):
 
 ```powershell
-.\.venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --windowed --name ReactorPWR --paths . --collect-all pygame run_reactor.py
+.\.venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --windowed --name ReactorPWR --paths . --hidden-import=pygame --collect-binaries pygame run_reactor.py
 ```
 
 2. Lanza la GUI:
 
 - Doble clic en `ReactorPWR.bat`, o
 - Doble clic en `dist\ReactorPWR.exe`
+
+Controles en la interfaz:
+- **LIVE**: neutrones chocando en el nucleo + telemetria
+- **E**: recorre los 4 experimentos del PDF en orden (objetivo, metodo y resultado)
+- **N**: siguiente experimento
+- **L**: volver a modo live
+- **ESPACIO**: pausa
+- **ESC**: salir
 
 ### Opcion B - Desde Python (desarrollo)
 

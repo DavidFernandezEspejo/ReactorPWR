@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
+from src.core.control_loop import apply_thermal_neutron_step
 from src.core.physics import (
     calculate_keff,
     calculate_thermodynamics,
@@ -14,7 +15,6 @@ from src.core.physics import (
     simulate_neutron_batch,
 )
 from src.models.entities import CoreState
-from src.scripts.run_gui import apply_thermal_neutron_step
 
 
 def experimento_1_equilibrio(seed: int = 42) -> dict:

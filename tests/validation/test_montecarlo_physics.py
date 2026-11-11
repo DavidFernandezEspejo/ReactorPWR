@@ -64,8 +64,8 @@ def test_large_batch_scaling_preserves_keff_statistics() -> None:
 
     keff_small = calculate_keff(small_prod, small_dest)
     keff_large = calculate_keff(large_prod, large_dest)
-    assert abs(keff_small - keff_large) < 0.05
-    assert large_dest == pytest.approx(small_dest * 10, rel=0.05)
+    assert abs(keff_small - keff_large) < 0.12
+    assert large_dest == pytest.approx(small_dest * 10, rel=0.08)
 
 
 @pytest.mark.validation

@@ -34,22 +34,71 @@ def test_dashboard_returns_false_when_quit_event_arrives(monkeypatch) -> None:
     fake_screen = FakeScreen()
 
     monkeypatch.setattr(dashboard_module.pygame, "init", lambda: None)
-    monkeypatch.setattr(dashboard_module.pygame.display, "set_mode", lambda _size: fake_screen)
+    monkeypatch.setattr(
+        dashboard_module.pygame.display, "set_mode", lambda *a, **k: fake_screen
+    )
     monkeypatch.setattr(dashboard_module.pygame.display, "set_caption", lambda _title: None)
-    monkeypatch.setattr(dashboard_module.pygame.font, "SysFont", lambda _name, _size: FakeFont())
+    monkeypatch.setattr(
+        dashboard_module.pygame.font, "SysFont", lambda *_a, **_k: FakeFont()
+    )
     monkeypatch.setattr(dashboard_module.pygame.time, "Clock", lambda: FakeClock())
+    monkeypatch.setattr(dashboard_module.pygame.time, "get_ticks", lambda: 1000)
     monkeypatch.setattr(
         dashboard_module.pygame.event,
         "get",
         lambda: [SimpleNamespace(type=dashboard_module.pygame.QUIT)],
     )
-
-    quit_called = {"value": False}
-    monkeypatch.setattr(dashboard_module.pygame, "quit", lambda: quit_called.__setitem__("value", True))
+    monkeypatch.setattr(
+        "src.visualization.dashboard.CoreView",
+        lambda *a, **k: SimpleNamespace(draw=lambda *a, **k: None, visible_neutrons=0, field=SimpleNamespace(particles=[])),
+    )
 
     dashboard = ReactorDashboard(headless=False)
     should_continue = dashboard.render(CoreState())
 
+    # Solo la X de la ventana cierra; no se fuerza pygame.quit aqui.
     assert should_continue is False
-    assert quit_called["value"] is True
 
+
+def test_dashboard_restart_button_hitbox() -> None:
+    dashboard = ReactorDashboard(headless=True)
+    assert dashboard.restart_button.collidepoint(50, 620)
+    dashboard._clicked_restart = True
+    assert dashboard.consume_restart_click() is True
+    assert dashboard.consume_restart_click() is False
+
+
+def test_speed_slider_maps_mouse_position() -> None:
+    dashboard = ReactorDashboard(headless=True)
+    dashboard.speed_track = __import__("pygame").Rect(190, 612, 220, 12)
+    dashboard._update_speed_from_mouse(190)
+    assert dashboard.sim_speed == 0.25
+    dashboard._update_speed_from_mouse(190 + 220)
+    assert dashboard.sim_speed == 4.0
+
+
+def test_dashboard_consume_key_clears_buffer(monkeypatch) -> None:
+    import src.visualization.dashboard as dashboard_module
+
+    fake_screen = FakeScreen()
+    monkeypatch.setattr(dashboard_module.pygame, "init", lambda: None)
+    monkeypatch.setattr(
+        dashboard_module.pygame.display, "set_mode", lambda *a, **k: fake_screen
+    )
+    monkeypatch.setattr(dashboard_module.pygame.display, "set_caption", lambda _title: None)
+    monkeypatch.setattr(
+        dashboard_module.pygame.font, "SysFont", lambda *_a, **_k: FakeFont()
+    )
+    monkeypatch.setattr(dashboard_module.pygame.time, "Clock", lambda: FakeClock())
+    monkeypatch.setattr(dashboard_module.pygame.time, "get_ticks", lambda: 2000)
+    monkeypatch.setattr(dashboard_module.pygame.event, "get", list)
+    monkeypatch.setattr(dashboard_module.pygame.display, "flip", lambda: None)
+    monkeypatch.setattr(
+        "src.visualization.dashboard.CoreView",
+        lambda *a, **k: SimpleNamespace(draw=lambda *a, **k: None, visible_neutrons=0, field=SimpleNamespace(particles=[])),
+    )
+
+    dashboard = ReactorDashboard(headless=False)
+    dashboard._last_key = dashboard_module.pygame.K_e
+    assert dashboard.consume_key() == dashboard_module.pygame.K_e
+    assert dashboard.consume_key() is None
