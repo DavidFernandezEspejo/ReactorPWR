@@ -1,0 +1,26 @@
+@startuml
+skinparam style strictuml
+skinparam componentStyle rectangle
+
+package "Runtime" {
+  component "run_gui.py" as Runner
+  component "EventEngine" as Engine
+  component "Physics module\n(simulate_neutron_batch,\ncalculate_keff,\ncalculate_thermodynamics)" as Physics
+  component "CoreState" as State
+  component "ReactorDashboard" as Dashboard
+  component "SimulationLogger" as Logger
+}
+
+database "logs/simulaciones/*" as Logs
+file "telemetry.json" as Telemetry
+
+Runner --> Engine : schedule/step
+Engine --> Physics : calculos
+Engine --> State : actualiza estado
+Dashboard --> State : lectura para render
+Engine --> Logger : log_event/log_state
+Logger --> Logs : execution.log
+Logger --> Telemetry : export_telemetry()
+
+@enduml
+

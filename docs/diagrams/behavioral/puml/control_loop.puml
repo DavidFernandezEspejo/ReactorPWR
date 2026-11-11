@@ -1,0 +1,30 @@
+@startuml
+skinparam style strictuml
+
+participant "EventEngine" as Engine
+participant "PhysicsEngine" as Physics
+participant "CoreState" as State
+
+loop Cada intervalo dt
+Engine -> Physics : simulate_neutron_batch(neutrones, barras)
+Physics --> Engine : (producidos, destruidos)
+
+Engine -> Physics : calculate_keff(producidos, destruidos)
+Physics --> Engine : keff
+
+Engine -> Physics : calculate_thermodynamics(producidos, coolant_flow)
+Physics --> Engine : (temp, potencia)
+
+Engine -> State : actualizar variables de estado
+
+alt Temp > 350.0 C
+    Engine -> State : scram_active = True
+    Engine -> State : control_rods_pct = 100%
+else keff > 1.05
+    Engine -> State : incrementar barras
+else keff < 0.95
+    Engine -> State : reducir barras
+end
+
+end
+@enduml

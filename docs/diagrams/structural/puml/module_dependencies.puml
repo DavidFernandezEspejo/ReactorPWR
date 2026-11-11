@@ -1,0 +1,29 @@
+@startuml
+skinparam style strictuml
+
+package "src" {
+  [models.entities] as entities
+  [events.base_event] as base_event
+  [core.event_engine] as event_engine
+  [core.physics] as physics
+  [utils.logger] as logger
+  [visualization.dashboard] as dashboard
+  [visualization.core_views] as core_views
+  [scripts.run_gui] as run_gui
+}
+
+run_gui --> event_engine
+run_gui --> physics
+run_gui --> entities
+run_gui --> logger
+run_gui --> dashboard
+
+event_engine --> base_event
+event_engine --> entities
+event_engine --> logger
+
+dashboard --> entities
+core_views --> entities
+
+@enduml
+

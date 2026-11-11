@@ -1,0 +1,69 @@
+@startuml
+skinparam style strictuml
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 12
+
+package "src.models" {
+class CoreState {
+  + sim_time: float
+  + active_neutrons: int
+  + control_rods_pct: float
+  + coolant_flow: float
+  + coolant_temp_celsius: float
+  + keff: float
+  + electric_power_mwe: float
+  + scram_active: bool
+}
+}
+
+package "src.events" {
+class Evento {
+  + tiempo_ejecucion: float
+  + nombre: str
+  + callback: Callable
+  + kwargs: dict
+  + ejecutar()
+}
+}
+
+package "src.core" {
+class EventEngine {
+  - reloj_global_t: float
+  - event_queue: list
+  + schedule_event(dt, nombre, callback)
+  + step()
+}
+
+class Physics {
+  + simulate_neutron_batch(initial_neutrons, control_rods_pct)
+  + calculate_keff(producidos, destruidos)
+  + calculate_thermodynamics(producidos, flujo, temp_base)
+}
+}
+
+package "src.utils" {
+class SimulationLogger {
+  + log_event(event_name, details)
+  + log_state(state_dict)
+  + export_telemetry()
+}
+}
+
+package "src.visualization" {
+class ReactorDashboard {
+  + render(state)
+  + close()
+}
+class CoreView {
+  + draw(surface, state)
+}
+}
+
+EventEngine "1" --> "1" CoreState : actualiza
+EventEngine "1" --> "0..*" Evento : ejecuta
+EventEngine "1" --> "1" SimulationLogger : registra
+ReactorDashboard "1" --> "1" CoreState : muestra
+CoreView "1" --> "1" CoreState : muestra
+EventEngine ..> Physics : usa
+
+@enduml
