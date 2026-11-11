@@ -89,14 +89,14 @@ def simulate_neutron_batch(
     p_fision, p_captura, _p_fuga = interaction_probabilities(
         control_rods_pct, scram_active
     )
-    sample = initial_neutrons if initial_neutrons <= max_sample else max_sample
+    sample = min(initial_neutrons, max_sample)
     producidos, destruidos = _simulate_neutron_batch_kernel(
         sample, p_fision, p_fision + p_captura
     )
     if sample != initial_neutrons:
         scale = initial_neutrons / sample
-        producidos = int(round(producidos * scale))
-        destruidos = int(round(destruidos * scale))
+        producidos = round(producidos * scale)
+        destruidos = round(destruidos * scale)
     return producidos, destruidos
 
 

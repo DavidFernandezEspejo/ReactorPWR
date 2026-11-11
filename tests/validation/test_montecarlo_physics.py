@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 import pytest
 
@@ -44,7 +46,7 @@ def test_keff_monotone_decreasing_with_rod_insertion() -> None:
         means.append(float(np.mean(vals)))
 
     # Cada salto de insercion debe reducir keff medio (con tolerancia de ruido).
-    for left, right in zip(means, means[1:]):
+    for left, right in itertools.pairwise(means):
         assert right <= left + 0.05
 
 

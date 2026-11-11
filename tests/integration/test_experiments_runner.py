@@ -12,6 +12,8 @@ from src.scripts.run_experiments import (
     experimento_2_moderacion,
     experimento_3_transitorio,
     experimento_4_flujo,
+)
+from src.scripts.run_experiments import (
     main as run_all_experiments,
 )
 

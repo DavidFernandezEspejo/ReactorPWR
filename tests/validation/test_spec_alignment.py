@@ -37,12 +37,12 @@ def test_pdf_spec_is_readable() -> None:
 
 @pytest.mark.validation
 def test_core_modules_importable() -> None:
-    import src.core.event_engine  # noqa: F401
-    import src.core.physics  # noqa: F401
-    import src.models.entities  # noqa: F401
-    import src.scripts.run_experiments  # noqa: F401
-    import src.scripts.run_gui  # noqa: F401
-    import src.utils.logger  # noqa: F401
+    import src.core.event_engine
+    import src.core.physics
+    import src.models.entities
+    import src.scripts.run_experiments
+    import src.scripts.run_gui
+    import src.utils.logger
     import src.visualization.dashboard  # noqa: F401
 
 
