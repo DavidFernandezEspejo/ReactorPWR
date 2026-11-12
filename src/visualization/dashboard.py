@@ -29,6 +29,9 @@ class ReactorDashboard:
     """Interfaz PWR: panel, planta, controles inferiores sin solaparse."""
 
     CONTROLS_H = 96
+    SPEED_MIN = 0.05
+    SPEED_MAX = 2.0
+    SPEED_DEFAULT = 0.35
 
     def __init__(
         self,
@@ -43,9 +46,9 @@ class ReactorDashboard:
         self.fullscreen = False
         self.mode = "live"
         self.paused = False
-        self.sim_speed = 1.0
+        self.sim_speed = self.SPEED_DEFAULT
         self.active_experiment = 0
-        self.message = "F11 pantalla completa | R reiniciar | EXP1-4 experimentos"
+        self.message = "F11 | R reiniciar | EXP1-4 | baja el slider para ver transiciones"
         self.experiment_lines: list[str] = [
             "Usa los botones EXP1-EXP4 para saltar entre experimentos."
         ]
@@ -147,14 +150,15 @@ class ReactorDashboard:
                 self._update_speed_from_mouse(event.pos[0])
 
         now = pygame.time.get_ticks()
-        dt = max(1 / 120, min(0.033, (now - self._last_ticks) / 1000.0))
+        raw_dt = max(1 / 120, min(0.033, (now - self._last_ticks) / 1000.0))
         self._last_ticks = now
+        # Pausa: congelar tambien animacion (neutrones, flujo, barras).
+        dt = 0.0 if self.paused else raw_dt * self.sim_speed
 
         self.screen.fill((12, 16, 22))
         visible = 0
         if self.core_view is not None:
-            # El slider escala fisica Y movimiento visual de neutrones.
-            self.core_view.draw(self.screen, state, dt=dt * self.sim_speed)
+            self.core_view.draw(self.screen, state, dt=dt)
             visible = self.core_view.visible_neutrons
         self._draw_sidebar(state, visible_neutrons=visible)
         self._draw_controls_bar(visible_neutrons=visible)
@@ -193,7 +197,8 @@ class ReactorDashboard:
         return idx
 
     def _speed_knob_rect(self) -> pygame.Rect:
-        t = (self.sim_speed - 0.25) / (4.0 - 0.25)
+        span = self.SPEED_MAX - self.SPEED_MIN
+        t = (self.sim_speed - self.SPEED_MIN) / span
         t = max(0.0, min(1.0, t))
         x = self.speed_track.x + int(t * self.speed_track.w) - 8
         return pygame.Rect(x, self.speed_track.y - 6, 16, 24)
@@ -201,7 +206,7 @@ class ReactorDashboard:
     def _update_speed_from_mouse(self, mouse_x: int) -> None:
         t = (mouse_x - self.speed_track.x) / max(1, self.speed_track.w)
         t = max(0.0, min(1.0, t))
-        self.sim_speed = round(0.25 + t * (4.0 - 0.25), 2)
+        self.sim_speed = round(self.SPEED_MIN + t * (self.SPEED_MAX - self.SPEED_MIN), 2)
 
     def _draw_sidebar(self, state: CoreState, visible_neutrons: int) -> None:
         panel = pygame.Rect(12, 12, 360, self.height - self.CONTROLS_H - 20)
@@ -211,11 +216,13 @@ class ReactorDashboard:
         status_color = (255, 70, 70) if state.scram_active else (70, 220, 130)
         self.screen.blit(self.font_title.render("PANEL PWR", True, (230, 235, 245)), (24, 22))
 
-        neutron_line = f"Neutrones: {state.active_neutrons}"
         if state.active_neutrons > MAX_VISIBLE_NEUTRONS:
-            neutron_line += f" (visibles {visible_neutrons})"
+            neutron_line = (
+                f"Neutrones: {state.active_neutrons} "
+                f"(dibujados {visible_neutrons}/{MAX_VISIBLE_NEUTRONS})"
+            )
         else:
-            neutron_line += f" (= {visible_neutrons} en pantalla)"
+            neutron_line = f"Neutrones: {state.active_neutrons} (1:1 en pantalla)"
 
         criticality = (
             "supercritico"
@@ -289,7 +296,10 @@ class ReactorDashboard:
         pygame.draw.rect(self.screen, (50, 60, 75), self.speed_track, border_radius=6)
         fill_w = max(
             0,
-            int(((self.sim_speed - 0.25) / (4.0 - 0.25)) * self.speed_track.w),
+            int(
+                ((self.sim_speed - self.SPEED_MIN) / (self.SPEED_MAX - self.SPEED_MIN))
+                * self.speed_track.w
+            ),
         )
         if fill_w > 0:
             pygame.draw.rect(

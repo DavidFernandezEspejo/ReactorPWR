@@ -14,6 +14,7 @@ from src.core.control_loop import (
     SCRAM_TRIP_C,
     SOURCE_NEUTRONS_LIVE,
     SOURCE_NEUTRONS_SCRAM,
+    apply_population_delta,
     apply_thermal_neutron_step,
 )
 from src.core.event_engine import EventEngine
@@ -86,9 +87,10 @@ def main() -> None:
     auto_control = True
     tour = ExperimentTour.build()
     physics_accum = 0.0
-    physics_dt = 0.1
+    # Paso fisico mas largo: a velocidad baja se ve cada transicion.
+    physics_dt = 0.2
     running = True
-    message = "F11 fullscreen | slider velocidad | EXP1-4 / teclas 1-4"
+    message = "Baja el slider (x0.05) para ver barras/neutrones con calma"
 
     while running:
         dashboard.mode = mode
@@ -206,9 +208,10 @@ def main() -> None:
             continue
 
         physics_accum += (1.0 / 60.0) * dashboard.sim_speed
-        physics_accum = min(physics_accum, physics_dt * 4)
+        # Como mucho 1 paso fisico por frame: evita saltos aunque el slider suba.
+        physics_accum = min(physics_accum, physics_dt * 1.5)
         steps = 0
-        while physics_accum >= physics_dt and steps < 4:
+        while physics_accum >= physics_dt and steps < 1:
             if mode == "experiments":
                 still = tour.tick(state)
                 if (
@@ -248,16 +251,16 @@ def _manual_physics_step(state: CoreState) -> None:
         scram_active=state.scram_active,
     )
     state.keff = calculate_keff(producidos, destruidos)
-    state.active_neutrons = max(
-        floor, min(MAX_POPULATION, state.active_neutrons + producidos - destruidos)
-    )
+    apply_population_delta(state, producidos, destruidos)
+    heat_scale = ACADEMIC_HEAT_PER_FISSION * (0.12 if state.scram_active else 1.0)
+    power_scale = ACADEMIC_POWER_PER_FISSION * (0.12 if state.scram_active else 1.0)
     state.coolant_temp_celsius, state.electric_power_mwe = calculate_thermodynamics(
         producidos=producidos,
         flujo=state.coolant_flow,
         temp_actual=state.coolant_temp_celsius,
         scram_active=state.scram_active,
-        heat_per_fission=ACADEMIC_HEAT_PER_FISSION,
-        power_per_fission=ACADEMIC_POWER_PER_FISSION,
+        heat_per_fission=heat_scale,
+        power_per_fission=power_scale,
     )
     if state.coolant_temp_celsius > SCRAM_TRIP_C:
         state.scram_active = True

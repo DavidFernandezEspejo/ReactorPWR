@@ -31,6 +31,8 @@ class CoreView:
         self.flow_speed = 1.0  # 0.4 lento .. 2.0 rapido (exp 4)
         self.moderation_label = ""  # exp 2
         self._flow_phase = 0.0
+        self._display_rods_pct: float | None = None
+        self._display_neutrons: float | None = None
 
     def draw(self, surface: Any, state: CoreState, dt: float = 1 / 60) -> None:
         font = pygame.font.SysFont("Consolas", 15)
@@ -52,7 +54,15 @@ class CoreView:
         pygame.draw.rect(surface, (255, 210, 120), fuel, width=2, border_radius=8)
         surface.blit(font.render("COMBUSTIBLE", True, (40, 30, 10)), (fuel.x + 8, fuel.bottom - 22))
 
-        insertion = state.control_rods_pct / 100.0
+        # Barras: interpolacion suave solo si hay movimiento de tiempo (no en pausa).
+        if self._display_rods_pct is None or dt <= 0:
+            self._display_rods_pct = state.control_rods_pct
+        else:
+            rod_alpha = min(1.0, 3.5 * dt)
+            self._display_rods_pct += (
+                state.control_rods_pct - self._display_rods_pct
+            ) * rod_alpha
+        insertion = self._display_rods_pct / 100.0
         rod_h = int(28 + insertion * (fuel.height + 24))
         rod_w = 20
         rod_color = (220, 55, 55) if state.scram_active else (50, 55, 65)
@@ -68,7 +78,9 @@ class CoreView:
             for dx, dy in ((-24, -24), (24, -24), (-24, 24), (24, 24), (0, 0))
         ]
 
+        # 1:1 con el estado (cap visual = MAX_VISIBLE). Sin contador "fantasma".
         target = int(min(MAX_VISIBLE_NEUTRONS, max(0, state.active_neutrons)))
+        self._display_neutrons = float(target)
         bounds = (
             float(fuel.left + 6),
             float(fuel.top + 6),
@@ -76,15 +88,17 @@ class CoreView:
             float(fuel.bottom - 6),
         )
         self.field.sync_population(target, bounds)
-        self.field.update(
-            dt=dt,
-            bounds=bounds,
-            rod_rects=self._rod_rects,
-            fuel_points=self._fuel_points,
-            scram_active=state.scram_active,
-            keff=state.keff,
-        )
-        self.field.sync_population(target, bounds)
+        if dt > 0:
+            self.field.update(
+                dt=dt,
+                bounds=bounds,
+                rod_rects=self._rod_rects,
+                fuel_points=self._fuel_points,
+                scram_active=state.scram_active,
+                keff=state.keff,
+            )
+            # Tras absorciones visuales, reponer al contador real.
+            self.field.sync_population(target, bounds)
         self.visible_neutrons = len(self.field.particles)
 
         for fx, fy, ttl in self.field.fission_flashes:
