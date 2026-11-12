@@ -8,7 +8,9 @@ def test_simulation_logger_creates_log_directory_and_files(tmp_path, monkeypatch
     logger = SimulationLogger(run_name="test_run")
 
     logger.log_event("EventoDemo", "detalle")
-    logger.log_state({"sim_time": 1.0, "active_neutrons": 1000})
+    logger.log_phase("EXP1 start", "equilibrio")
+    logger.log_decision("SCRAM ON", "T=360C")
+    logger.log_state({"sim_time": 1.0, "active_neutrons": 1000}, force_text=True)
 
     telemetry_path = logger.export_telemetry()
 
@@ -17,11 +19,19 @@ def test_simulation_logger_creates_log_directory_and_files(tmp_path, monkeypatch
 
     assert logger.log_dir.exists()
     assert (logger.log_dir / "execution.log").exists()
+    assert (logger.log_dir / "resumen.txt").exists()
+    assert (logger.log_dir / "telemetry.csv").exists()
     assert telemetry_path.exists()
 
     telemetry_data = json.loads(telemetry_path.read_text(encoding="utf-8"))
     assert telemetry_data == [{"sim_time": 1.0, "active_neutrons": 1000}]
 
     log_text = (logger.log_dir / "execution.log").read_text(encoding="utf-8")
-    assert "EVENTO [EventoDemo]: detalle" in log_text
+    assert "EVENTO  EventoDemo: detalle" in log_text
+    assert "FASE    EXP1 start" in log_text
+    assert "DECISION SCRAM ON" in log_text
+    assert "ESTADO  t=1.00s" in log_text
 
+    resumen = (logger.log_dir / "resumen.txt").read_text(encoding="utf-8")
+    assert "Hitos" in resumen
+    assert "SCRAM ON" in resumen

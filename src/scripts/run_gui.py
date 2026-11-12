@@ -91,6 +91,8 @@ def main() -> None:
     physics_dt = 0.2
     running = True
     message = "Baja el slider (x0.05) para ver barras/neutrones con calma"
+    last_scram = state.scram_active
+    last_exp_phase: tuple[int, int] | None = None
 
     while running:
         dashboard.mode = mode
@@ -130,6 +132,7 @@ def main() -> None:
             _clear_view(dashboard)
             physics_accum = 0.0
             message = "Simulacion reiniciada."
+            logger.log_event("REINICIO", "Simulacion vuelta a LIVE nominal")
 
         exp_click = dashboard.consume_experiment_click()
         if exp_click is not None:
@@ -145,10 +148,16 @@ def main() -> None:
                 if step
                 else "Experimento invalido"
             )
+            if step:
+                logger.log_phase(
+                    f"EXP{exp_click} start",
+                    f"{step.title} — {step.goal}",
+                )
 
         key = dashboard.consume_key()
         if key == pygame.K_SPACE:
             paused = not paused
+            logger.log_event("PAUSA", "ON" if paused else "OFF")
         elif key == pygame.K_r:
             mode = "live"
             paused = False
@@ -223,6 +232,19 @@ def main() -> None:
                         f"Experimento {tour.active.index} terminado. "
                         "Pulsa N o EXP para continuar."
                     )
+                    logger.log_phase(
+                        f"EXP{tour.active.index} fin",
+                        str(tour.active.result)[:180],
+                    )
+                    logger.log_state(state.model_dump(), force_text=True)
+                elif tour.session is not None:
+                    phase_key = (tour.session.index, tour.session.phase_i)
+                    if phase_key != last_exp_phase:
+                        last_exp_phase = phase_key
+                        logger.log_phase(
+                            f"EXP{tour.session.index} fase {tour.session.phase_i + 1}",
+                            tour.session.banner or tour.session.title,
+                        )
             elif not auto_control:
                 _manual_physics_step(state)
                 engine.reloj_global_t += physics_dt
@@ -235,6 +257,19 @@ def main() -> None:
                 )
                 engine.step()
             state.active_neutrons = min(state.active_neutrons, MAX_POPULATION)
+            if state.scram_active != last_scram:
+                last_scram = state.scram_active
+                if state.scram_active:
+                    logger.log_decision(
+                        "SCRAM ON",
+                        f"T={state.coolant_temp_celsius:.1f}C barras={state.control_rods_pct:.0f}%",
+                    )
+                else:
+                    logger.log_decision(
+                        "SCRAM OFF",
+                        f"T={state.coolant_temp_celsius:.1f}C barras={state.control_rods_pct:.0f}%",
+                    )
+                logger.log_state(state.model_dump(), force_text=True)
             physics_accum -= physics_dt
             steps += 1
 
