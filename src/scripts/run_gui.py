@@ -6,8 +6,22 @@ from functools import partial
 
 import pygame
 
-from src.core.control_loop import apply_thermal_neutron_step
+from src.core.control_loop import (
+    ACADEMIC_HEAT_PER_FISSION,
+    ACADEMIC_POWER_PER_FISSION,
+    MAX_POPULATION,
+    SCRAM_RESET_C,
+    SCRAM_TRIP_C,
+    SOURCE_NEUTRONS_LIVE,
+    SOURCE_NEUTRONS_SCRAM,
+    apply_thermal_neutron_step,
+)
 from src.core.event_engine import EventEngine
+from src.core.physics import (
+    calculate_keff,
+    calculate_thermodynamics,
+    simulate_neutron_batch,
+)
 from src.models.entities import CoreState
 from src.utils.logger import SimulationLogger
 from src.visualization.core_views import MAX_VISIBLE_NEUTRONS
@@ -16,10 +30,12 @@ from src.visualization.experiment_panel import ExperimentTour
 
 __all__ = ["apply_thermal_neutron_step", "main"]
 
+START_NEUTRONS = min(24, MAX_VISIBLE_NEUTRONS)
+
 
 def _reset_live(logger: SimulationLogger) -> tuple[CoreState, EventEngine]:
     state = CoreState(
-        active_neutrons=min(180, MAX_VISIBLE_NEUTRONS),
+        active_neutrons=START_NEUTRONS,
         control_rods_pct=45.0,
         coolant_temp_celsius=290.0,
         keff=1.0,
@@ -27,6 +43,37 @@ def _reset_live(logger: SimulationLogger) -> tuple[CoreState, EventEngine]:
         scram_active=False,
     )
     return state, EventEngine(state=state, logger=logger)
+
+
+def _clear_view(dashboard: ReactorDashboard) -> None:
+    if dashboard.core_view is None:
+        return
+    dashboard.core_view.field.particles.clear()
+    dashboard.core_view.banner = ""
+    dashboard.core_view.moderation_label = ""
+    dashboard.core_view.flow_speed = 1.0
+
+
+def _sync_view_from_tour(dashboard: ReactorDashboard, tour: ExperimentTour) -> None:
+    view = dashboard.core_view
+    if view is None:
+        return
+    session = tour.session
+    if session is None or tour.active is None or tour.active.status != "running":
+        if session is not None and tour.active is not None and tour.active.status == "done":
+            view.banner = session.banner
+            view.banner_color = session.banner_color
+            view.flow_speed = session.flow_speed
+            view.moderation_label = session.moderation_label
+        elif dashboard.mode != "experiments":
+            view.banner = ""
+            view.flow_speed = 1.0
+            view.moderation_label = ""
+        return
+    view.banner = session.banner
+    view.banner_color = session.banner_color
+    view.flow_speed = session.flow_speed
+    view.moderation_label = session.moderation_label
 
 
 def main() -> None:
@@ -41,25 +88,33 @@ def main() -> None:
     physics_accum = 0.0
     physics_dt = 0.1
     running = True
-    message = "F11 fullscreen | slider velocidad | E experimentos en vivo"
+    message = "F11 fullscreen | slider velocidad | EXP1-4 / teclas 1-4"
 
     while running:
+        dashboard.mode = mode
+        active_exp = (
+            tour.active.index
+            if mode == "experiments" and tour.active is not None
+            else 0
+        )
         ui = {
             "mode": mode,
             "paused": paused,
             "message": message,
             "sim_speed": dashboard.sim_speed,
+            "active_experiment": active_exp,
             "experiment_lines": (
                 tour.panel_lines()
                 if mode == "experiments"
                 else [
                     "Panel = estado real de la sim.",
                     "Dibujo: vasija, barras, tuberias y red.",
-                    "E = experimentos construidos en vivo.",
-                    "N = siguiente experimento (cuando termine).",
+                    "EXP1-4 (botones o teclas) = experimentos.",
+                    "N = siguiente | L = volver a LIVE.",
                 ]
             ),
         }
+        _sync_view_from_tour(dashboard, tour)
         running = dashboard.render(state, ui=ui)
         if not running:
             break
@@ -70,9 +125,24 @@ def main() -> None:
             auto_control = True
             tour = ExperimentTour.build()
             state, engine = _reset_live(logger)
-            if dashboard.core_view is not None:
-                dashboard.core_view.field.particles.clear()
+            _clear_view(dashboard)
+            physics_accum = 0.0
             message = "Simulacion reiniciada."
+
+        exp_click = dashboard.consume_experiment_click()
+        if exp_click is not None:
+            mode = "experiments"
+            paused = False
+            state, engine = _reset_live(logger)
+            _clear_view(dashboard)
+            tour = ExperimentTour.build()
+            step = tour.jump_to(exp_click, state)
+            physics_accum = 0.0
+            message = (
+                f"Experimento {exp_click} en curso..."
+                if step
+                else "Experimento invalido"
+            )
 
         key = dashboard.consume_key()
         if key == pygame.K_SPACE:
@@ -83,8 +153,8 @@ def main() -> None:
             auto_control = True
             tour = ExperimentTour.build()
             state, engine = _reset_live(logger)
-            if dashboard.core_view is not None:
-                dashboard.core_view.field.particles.clear()
+            _clear_view(dashboard)
+            physics_accum = 0.0
             message = "Simulacion reiniciada."
         elif key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
             if mode == "live":
@@ -103,12 +173,14 @@ def main() -> None:
             paused = False
             tour = ExperimentTour.build()
             tour.start_current(state)
-            message = "Experimento 1 en curso (se construye solo)..."
+            physics_accum = 0.0
+            message = "Experimento 1 en curso..."
         elif key == pygame.K_n and mode == "experiments":
             if tour.active is not None and tour.active.status == "running":
                 message = "Espera: el experimento actual sigue midiendo..."
             elif tour.can_advance():
                 nxt = tour.advance_and_start(state)
+                physics_accum = 0.0
                 if nxt is None:
                     message = "Los 4 experimentos estan completados."
                 else:
@@ -116,13 +188,15 @@ def main() -> None:
             elif tour.finished:
                 message = "Tour completado. L = LIVE o REINICIAR."
             else:
-                message = "Pulsa E para empezar o espera la conclusion."
+                message = "Pulsa EXP1-4 o espera la conclusion."
         elif key == pygame.K_l:
             mode = "live"
             paused = False
             auto_control = True
             tour = ExperimentTour.build()
             state, engine = _reset_live(logger)
+            _clear_view(dashboard)
+            physics_accum = 0.0
             message = "Modo LIVE."
         elif key == pygame.K_a and mode == "live":
             auto_control = True
@@ -132,7 +206,9 @@ def main() -> None:
             continue
 
         physics_accum += (1.0 / 60.0) * dashboard.sim_speed
-        while physics_accum >= physics_dt:
+        physics_accum = min(physics_accum, physics_dt * 4)
+        steps = 0
+        while physics_accum >= physics_dt and steps < 4:
             if mode == "experiments":
                 still = tour.tick(state)
                 if (
@@ -142,7 +218,7 @@ def main() -> None:
                 ):
                     message = (
                         f"Experimento {tour.active.index} terminado. "
-                        "Pulsa N para el siguiente."
+                        "Pulsa N o EXP para continuar."
                     )
             elif not auto_control:
                 _manual_physics_step(state)
@@ -155,38 +231,42 @@ def main() -> None:
                     callback=partial(apply_thermal_neutron_step, state),
                 )
                 engine.step()
+            state.active_neutrons = min(state.active_neutrons, MAX_POPULATION)
             physics_accum -= physics_dt
+            steps += 1
 
     logger.export_telemetry()
     dashboard.close()
 
 
 def _manual_physics_step(state: CoreState) -> None:
-    from src.core.control_loop import SOURCE_NEUTRONS_LIVE, SOURCE_NEUTRONS_SCRAM
-    from src.core.physics import (
-        calculate_keff,
-        calculate_thermodynamics,
-        simulate_neutron_batch,
-    )
-
     floor = SOURCE_NEUTRONS_SCRAM if state.scram_active else SOURCE_NEUTRONS_LIVE
-    state.active_neutrons = max(state.active_neutrons, floor)
+    state.active_neutrons = max(min(state.active_neutrons, MAX_POPULATION), floor)
     producidos, destruidos = simulate_neutron_batch(
         initial_neutrons=state.active_neutrons,
         control_rods_pct=state.control_rods_pct,
         scram_active=state.scram_active,
     )
     state.keff = calculate_keff(producidos, destruidos)
-    state.active_neutrons = max(floor, state.active_neutrons + producidos - destruidos)
+    state.active_neutrons = max(
+        floor, min(MAX_POPULATION, state.active_neutrons + producidos - destruidos)
+    )
     state.coolant_temp_celsius, state.electric_power_mwe = calculate_thermodynamics(
         producidos=producidos,
         flujo=state.coolant_flow,
         temp_actual=state.coolant_temp_celsius,
         scram_active=state.scram_active,
+        heat_per_fission=ACADEMIC_HEAT_PER_FISSION,
+        power_per_fission=ACADEMIC_POWER_PER_FISSION,
     )
-    if state.coolant_temp_celsius > 350.0:
+    if state.coolant_temp_celsius > SCRAM_TRIP_C:
         state.scram_active = True
         state.control_rods_pct = 100.0
+    elif state.scram_active:
+        state.control_rods_pct = 100.0
+        if state.coolant_temp_celsius < SCRAM_RESET_C:
+            state.scram_active = False
+            state.control_rods_pct = 55.0
 
 
 if __name__ == "__main__":
