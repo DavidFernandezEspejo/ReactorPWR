@@ -76,9 +76,11 @@ def test_speed_slider_maps_mouse_position() -> None:
     dashboard = ReactorDashboard(headless=True)
     dashboard.speed_track = __import__("pygame").Rect(180, 672, 200, 12)
     dashboard._update_speed_from_mouse(180)
-    assert dashboard.sim_speed == 0.25
+    assert dashboard.sim_speed == dashboard.SPEED_MIN
     dashboard._update_speed_from_mouse(180 + 200)
-    assert dashboard.sim_speed == 4.0
+    assert dashboard.sim_speed == dashboard.SPEED_MAX
+    assert dashboard.SPEED_MIN <= 0.05
+    assert dashboard.SPEED_DEFAULT < 0.5
 
 
 def test_controls_do_not_overlap_legend_column() -> None:

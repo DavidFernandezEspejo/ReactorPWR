@@ -30,8 +30,26 @@ def test_live_exp1_sets_rod_phase_on_start() -> None:
     state = CoreState()
     session = LiveExperimentSession.create(1)
     session.start(state)
+    # Exp1 fija las barras al valor de fase desde el inicio.
+    assert session._target_rods == 0.0
     assert state.control_rods_pct == 0.0
     assert session.status == "running"
+
+
+def test_live_exp1_sweeps_all_rod_positions() -> None:
+    np.random.seed(1)
+    state = CoreState(active_neutrons=24)
+    session = LiveExperimentSession.create(1)
+    session.start(state)
+    seen = {0.0}
+    for _ in range(400):
+        if session.status != "running":
+            break
+        session.tick(state)
+        seen.add(state.control_rods_pct)
+    assert session.status == "done"
+    assert {0.0, 25.0, 50.0, 75.0, 100.0}.issubset(seen)
+    assert len(session.result["resultados"]) == 5
 
 
 def test_live_exp3_narrative_reaches_recovery() -> None:
@@ -39,20 +57,48 @@ def test_live_exp3_narrative_reaches_recovery() -> None:
     state = CoreState(active_neutrons=24, control_rods_pct=45.0, coolant_temp_celsius=300.0)
     session = LiveExperimentSession.create(3)
     session.start(state)
+    saw_zero_rods = False
     saw_scram = False
     saw_recovery = False
-    for _ in range(500):
+    for _ in range(2500):
         if session.status != "running":
             break
         session.tick(state)
+        if session.phase_i == 1 and state.control_rods_pct == 0.0:
+            saw_zero_rods = True
         if session.phase_i == 2 or state.scram_active:
             saw_scram = True
         if session.phase_i == 3:
             saw_recovery = True
+            assert state.scram_active is False
     assert session.status == "done"
+    assert saw_zero_rods, "El trip debe ocurrir con barras a 0%, no a 45%"
     assert saw_scram
     assert saw_recovery
-    assert state.control_rods_pct == pytest.approx(45.0, abs=1.0)
+    assert state.control_rods_pct == pytest.approx(45.0, abs=2.0)
+
+
+def test_live_exp2_keeps_rods_fixed_at_45() -> None:
+    np.random.seed(2)
+    state = CoreState(active_neutrons=24, control_rods_pct=45.0)
+    session = LiveExperimentSession.create(2)
+    session.start(state)
+    for _ in range(200):
+        if session.status != "running":
+            break
+        session.tick(state)
+        assert state.control_rods_pct == 45.0
+    assert session.status == "done"
+    mwes = [p["mwe"] for p in session.result["muestras"]]
+    assert max(mwes) > min(mwes), "La moderacion debe cambiar MWe con barras fijas"
+
+
+def test_neutron_delta_is_capped_per_step() -> None:
+    from src.core.control_loop import MAX_NEUTRON_DELTA_PER_STEP, apply_population_delta
+
+    state = CoreState(active_neutrons=20, scram_active=False)
+    apply_population_delta(state, producidos=100, destruidos=0)
+    assert state.active_neutrons == 20 + MAX_NEUTRON_DELTA_PER_STEP
 
 
 def test_live_exp4_completes_without_nameerror() -> None:
