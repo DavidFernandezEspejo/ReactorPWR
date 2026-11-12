@@ -246,8 +246,7 @@ class LiveExperimentSession:
             else:
                 self._target_rods = 45.0
                 state.scram_active = False
-                if state.control_rods_pct > 55.0:
-                    state.control_rods_pct = 55.0
+                state.control_rods_pct = min(state.control_rods_pct, 55.0)
                 self.banner = "EXP3: 4/4 recuperacion → barras ~45%"
                 self.banner_color = (100, 210, 255)
                 self.log_lines = [

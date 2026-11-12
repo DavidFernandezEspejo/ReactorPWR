@@ -7,7 +7,6 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     pygame = None  # type: ignore[assignment]
 
-from src.core.control_loop import MAX_POPULATION
 from src.models.entities import CoreState
 from src.visualization.particles import NeutronField
 
