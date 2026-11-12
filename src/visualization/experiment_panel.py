@@ -39,14 +39,14 @@ class ExperimentTour:
                 ExperimentStep(
                     index=2,
                     title="Tiempo de moderacion",
-                    goal="Ver efecto del tiempo de vuelo en potencia",
-                    method="Tres fases de moderacion en vivo",
+                    goal="Efecto del tiempo de vuelo sobre la potencia",
+                    method="Tres fases de mean_flight en vivo",
                 ),
                 ExperimentStep(
                     index=3,
                     title="Transitorio / SCRAM",
-                    goal="Respuesta ante pico de reactividad",
-                    method="Inyeccion con barras a 0% hasta SCRAM",
+                    goal="Respuesta ante pico de reactividad y recuperacion",
+                    method="Nominal → trip → SCRAM → retorno",
                 ),
                 ExperimentStep(
                     index=4,
@@ -67,9 +67,28 @@ class ExperimentTour:
         step = self.steps[self.current]
         step.status = "running"
         step.result = None
+        self.finished = False
         self.session = LiveExperimentSession.create(step.index)
         self.session.start(state)
         return step
+
+    def jump_to(self, experiment_index: int, state: CoreState) -> ExperimentStep | None:
+        """Salta directamente al experimento 1..4 y lo arranca."""
+        if experiment_index < 1 or experiment_index > len(self.steps):
+            return None
+        for step in self.steps:
+            if step.index < experiment_index:
+                if step.status == "pending":
+                    step.status = "done"
+            elif step.index == experiment_index:
+                step.status = "pending"
+                step.result = None
+            else:
+                step.status = "pending"
+                step.result = None
+        self.current = experiment_index - 1
+        self.finished = False
+        return self.start_current(state)
 
     def tick(self, state: CoreState) -> bool:
         """Avanza el experimento activo. True si sigue corriendo."""
@@ -151,5 +170,5 @@ class ExperimentTour:
         elif active.status == "done" and active.result is not None:
             lines.append("--- conclusion ---")
             lines.extend(self.summarize_result(active)[:6])
-            lines.append("Pulsa N para el siguiente")
+            lines.append("Pulsa N o boton EXP para el siguiente")
         return lines
