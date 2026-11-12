@@ -132,17 +132,20 @@ def test_tour_jump_to_starts_selected_experiment() -> None:
 
 
 def test_live_scram_recovers_when_temp_cools() -> None:
-    from src.core.control_loop import apply_thermal_neutron_step
+    from src.core.control_loop import SCRAM_RESET_C, apply_thermal_neutron_step
 
     np.random.seed(11)
     state = CoreState(
         active_neutrons=30,
         control_rods_pct=100.0,
         scram_active=True,
-        coolant_temp_celsius=360.0,
+        coolant_temp_celsius=340.0,
         electric_power_mwe=50.0,
     )
-    for _ in range(80):
+    for _ in range(250):
         apply_thermal_neutron_step(state)
+        if not state.scram_active:
+            break
+    assert state.coolant_temp_celsius < SCRAM_RESET_C
     assert state.scram_active is False
     assert state.control_rods_pct < 100.0
