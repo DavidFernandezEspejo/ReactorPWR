@@ -20,7 +20,7 @@ class NeutronParticle:
 class NeutronField:
     """Representacion visual (no fisica exacta) de la poblacion neutronica."""
 
-    def __init__(self, max_particles: int = 220) -> None:
+    def __init__(self, max_particles: int = 30) -> None:
         self.max_particles = max_particles
         self.particles: list[NeutronParticle] = []
         self._rng = np.random.default_rng(7)

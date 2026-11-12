@@ -121,16 +121,24 @@ def calculate_thermodynamics(
     flujo: float,
     temp_actual: float = 290.0,
     scram_active: bool = False,
+    heat_per_fission: float = 0.05,
+    power_per_fission: float | None = None,
 ) -> tuple[float, float]:
     """Balance térmico simplificado con enfriamiento hacia equilibrio.
 
     Post-SCRAM, al caer la fisión, la temperatura tiende a 290 °C en lugar
     de acumular calor de forma explosiva e irreversible.
+
+    heat_per_fission / power_per_fission permiten modo academico (pocos
+    neutrones visibles) sin romper los experimentos offline de Monte Carlo.
     """
-    calor = producidos * 0.05
-    temp_equilibrio = 290.0 + (calor / (flujo * 0.01))
+    calor = producidos * heat_per_fission
+    temp_equilibrio = 290.0 + (calor / max(flujo * 0.01, 1e-9))
     alpha = 0.55 if scram_active else 0.35
     temp = temp_actual + alpha * (temp_equilibrio - temp_actual)
     temp = max(20.0, min(temp, 600.0))
-    mwe = max(0.0, calor * 0.33)
+    if power_per_fission is None:
+        mwe = max(0.0, calor * 0.33)
+    else:
+        mwe = max(0.0, producidos * power_per_fission)
     return temp, mwe

@@ -25,12 +25,16 @@ class SimulationLogger:
         self.logger.addHandler(file_handler)
 
         self.telemetry_history: list[dict[str, Any]] = []
+        self._max_telemetry = 5000
 
     def log_event(self, event_name: str, details: str) -> None:
         self.logger.info(f"EVENTO [{event_name}]: {details}")
 
     def log_state(self, state_dict: dict[str, Any]) -> None:
         self.telemetry_history.append(state_dict)
+        # Evita crecimiento ilimitado en sesiones largas / idle.
+        if len(self.telemetry_history) > self._max_telemetry:
+            self.telemetry_history = self.telemetry_history[-self._max_telemetry :]
 
     def export_telemetry(self) -> Path:
         json_path = self.log_dir / "telemetry.json"
