@@ -50,7 +50,9 @@ class EventEngine:
 
         # Ejecutar el suceso
         evento.ejecutar()
-        self.logger.log_event(evento.nombre, f"t={self.reloj_global_t:.6f}s")
+        # Ciclo termico rutinario: solo iteracion. Otros eventos: hito + estado.
+        if evento.nombre != "CicloTermicoNeutronico":
+            self.logger.log_event(evento.nombre, f"t={self.reloj_global_t:.6f} s")
         self.logger.log_state(self.state.model_dump())
 
         return True

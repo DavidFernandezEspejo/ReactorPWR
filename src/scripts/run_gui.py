@@ -78,7 +78,8 @@ def _sync_view_from_tour(dashboard: ReactorDashboard, tour: ExperimentTour) -> N
 
 
 def main() -> None:
-    logger = SimulationLogger(run_name="gui_session")
+    # text_every=5: traza legible sin saturar el disco en sesiones largas.
+    logger = SimulationLogger(run_name="gui_session", text_every=5, informe_every=20)
     state, engine = _reset_live(logger)
     dashboard = ReactorDashboard()
 
@@ -91,6 +92,8 @@ def main() -> None:
     physics_dt = 0.2
     running = True
     message = "Baja el slider (x0.05) para ver barras/neutrones con calma"
+    last_scram = state.scram_active
+    last_exp_phase: tuple[int, int] | None = None
 
     while running:
         dashboard.mode = mode
@@ -130,6 +133,8 @@ def main() -> None:
             _clear_view(dashboard)
             physics_accum = 0.0
             message = "Simulacion reiniciada."
+            logger.log_event("REINICIO", "retorno a modo LIVE nominal")
+            logger.export_telemetry()
 
         exp_click = dashboard.consume_experiment_click()
         if exp_click is not None:
@@ -145,10 +150,16 @@ def main() -> None:
                 if step
                 else "Experimento invalido"
             )
+            if step:
+                logger.log_phase(
+                    f"EXP{exp_click}",
+                    f"{step.title} | {step.goal}",
+                )
 
         key = dashboard.consume_key()
         if key == pygame.K_SPACE:
             paused = not paused
+            logger.log_event("PAUSA", "activa" if paused else "inactiva")
         elif key == pygame.K_r:
             mode = "live"
             paused = False
@@ -214,6 +225,15 @@ def main() -> None:
         while physics_accum >= physics_dt and steps < 1:
             if mode == "experiments":
                 still = tour.tick(state)
+                logger.log_state(state.model_dump())
+                if tour.session is not None:
+                    phase_key = (tour.session.index, tour.session.phase_i)
+                    if phase_key != last_exp_phase:
+                        last_exp_phase = phase_key
+                        logger.log_phase(
+                            f"EXP{tour.session.index} fase {tour.session.phase_i + 1}",
+                            tour.session.banner or tour.session.title,
+                        )
                 if (
                     not still
                     and tour.active is not None
@@ -223,10 +243,17 @@ def main() -> None:
                         f"Experimento {tour.active.index} terminado. "
                         "Pulsa N o EXP para continuar."
                     )
+                    logger.log_phase(
+                        f"EXP{tour.active.index} fin",
+                        str(tour.active.result)[:180],
+                    )
+                    logger.log_state(state.model_dump(), force_text=True)
+                    logger.export_telemetry()
             elif not auto_control:
                 _manual_physics_step(state)
                 engine.reloj_global_t += physics_dt
                 state.sim_time = engine.reloj_global_t
+                logger.log_state(state.model_dump())
             else:
                 engine.schedule_event(
                     dt=physics_dt,
@@ -235,6 +262,21 @@ def main() -> None:
                 )
                 engine.step()
             state.active_neutrons = min(state.active_neutrons, MAX_POPULATION)
+            if state.scram_active != last_scram:
+                last_scram = state.scram_active
+                if state.scram_active:
+                    logger.log_decision(
+                        "SCRAM activo",
+                        f"T={state.coolant_temp_celsius:.1f} C | "
+                        f"barras={state.control_rods_pct:.0f} %",
+                    )
+                else:
+                    logger.log_decision(
+                        "SCRAM liberado",
+                        f"T={state.coolant_temp_celsius:.1f} C | "
+                        f"barras={state.control_rods_pct:.0f} %",
+                    )
+                logger.log_state(state.model_dump(), force_text=True)
             physics_accum -= physics_dt
             steps += 1
 
