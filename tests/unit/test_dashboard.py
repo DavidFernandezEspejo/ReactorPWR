@@ -62,7 +62,11 @@ def test_dashboard_returns_false_when_quit_event_arrives(monkeypatch) -> None:
 
 def test_dashboard_restart_button_hitbox() -> None:
     dashboard = ReactorDashboard(headless=True)
-    assert dashboard.restart_button.collidepoint(50, 620)
+    # Controles en franja inferior (CONTROLS_H), no solapan la planta.
+    cx = dashboard.restart_button.centerx
+    cy = dashboard.restart_button.centery
+    assert dashboard.restart_button.collidepoint(cx, cy)
+    assert dashboard.restart_button.top >= dashboard.height - dashboard.CONTROLS_H
     dashboard._clicked_restart = True
     assert dashboard.consume_restart_click() is True
     assert dashboard.consume_restart_click() is False
@@ -70,11 +74,26 @@ def test_dashboard_restart_button_hitbox() -> None:
 
 def test_speed_slider_maps_mouse_position() -> None:
     dashboard = ReactorDashboard(headless=True)
-    dashboard.speed_track = __import__("pygame").Rect(190, 612, 220, 12)
-    dashboard._update_speed_from_mouse(190)
+    dashboard.speed_track = __import__("pygame").Rect(180, 672, 200, 12)
+    dashboard._update_speed_from_mouse(180)
     assert dashboard.sim_speed == 0.25
-    dashboard._update_speed_from_mouse(190 + 220)
+    dashboard._update_speed_from_mouse(180 + 200)
     assert dashboard.sim_speed == 4.0
+
+
+def test_controls_do_not_overlap_legend_column() -> None:
+    dashboard = ReactorDashboard(headless=True)
+    assert dashboard.exp_buttons
+    assert dashboard.exp_buttons[0][1].left > dashboard.speed_track.right
+    legend_x = dashboard.exp_buttons[-1][1].right + 24
+    assert legend_x > dashboard.exp_buttons[-1][1].right
+
+
+def test_consume_experiment_click() -> None:
+    dashboard = ReactorDashboard(headless=True)
+    dashboard._clicked_experiment = 3
+    assert dashboard.consume_experiment_click() == 3
+    assert dashboard.consume_experiment_click() is None
 
 
 def test_dashboard_consume_key_clears_buffer(monkeypatch) -> None:

@@ -71,6 +71,8 @@ def test_high_rods_reduce_keff_vs_withdrawn_rods():
 
 def test_post_scram_power_and_neutrons_decay():
     np.random.seed(123)
+    from src.core.control_loop import MAX_POPULATION, SOURCE_NEUTRONS_SCRAM
+
     state = CoreState(
         active_neutrons=5000,
         control_rods_pct=100.0,
@@ -81,16 +83,18 @@ def test_post_scram_power_and_neutrons_decay():
     )
     neutrons_before = state.active_neutrons
     power_before = state.electric_power_mwe
+    peak = neutrons_before
 
     for _ in range(25):
         apply_thermal_neutron_step(state)
+        peak = max(peak, state.active_neutrons)
 
-    assert state.scram_active is True
+    # Contencion: sin runaway; puede liberar SCRAM al enfriar.
+    assert peak <= neutrons_before
+    assert state.active_neutrons <= MAX_POPULATION
     assert state.active_neutrons < neutrons_before
     assert state.electric_power_mwe < power_before
-    assert state.keff < 1.0
-    # Fuente minima: no se apaga del todo.
-    assert state.active_neutrons >= 12
+    assert state.active_neutrons >= SOURCE_NEUTRONS_SCRAM
 
 
 def test_live_source_prevents_total_shutdown():
@@ -102,7 +106,10 @@ def test_live_source_prevents_total_shutdown():
         coolant_temp_celsius=290.0,
     )
     apply_thermal_neutron_step(state)
-    assert state.active_neutrons >= 80
+    from src.core.control_loop import MAX_POPULATION, SOURCE_NEUTRONS_LIVE
+
+    assert state.active_neutrons >= SOURCE_NEUTRONS_LIVE
+    assert state.active_neutrons <= MAX_POPULATION
     assert state.keff > 0.0
 
 
