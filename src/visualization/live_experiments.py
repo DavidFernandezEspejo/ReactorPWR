@@ -118,8 +118,8 @@ class LiveExperimentSession:
             ),
             2: (
                 "Tiempo de moderacion",
-                "Barras fijas 45%: la moderacion desvia keff/T (por eso LIVE adapta)",
-                "Variable = mean_flight; barras NO se adaptan a proposito",
+                "Barras fijas 45%: la moderacion desvia keff/T",
+                "Variable = mean_flight; sin realimentacion de barras",
             ),
             3: (
                 "Transitorio / SCRAM",
@@ -200,9 +200,9 @@ class LiveExperimentSession:
             self.banner_color = (120, 200, 255)
             self.flow_speed = 0.7 + self.phase_i * 0.35
             self.log_lines = [
-                "Barras fijas 45%: NO se adaptan (a proposito)",
-                f"Moderacion {labels[self.phase_i]} → desvia keff/T",
-                "Por eso en LIVE el control mueve barras",
+                "Barras fijas 45%: sin realimentacion de control",
+                f"Moderacion {labels[self.phase_i]} → desvio de keff/T",
+                "En LIVE el lazo adapta la insercion",
             ]
         elif self.index == 3:
             self._mod_heat = 1.0
@@ -217,8 +217,8 @@ class LiveExperimentSession:
                 self.banner = "EXP3: 1/4 nominal OK (barras 45%)"
                 self.banner_color = (80, 220, 120)
                 self.log_lines = [
-                    "Igual que un LIVE estable: 45% controla",
-                    "En la siguiente fase se sacan las barras",
+                    "Condicion nominal: insercion 45%",
+                    "Fase siguiente: extraccion total de barras",
                 ]
             elif self.phase_i == 1:
                 # Diferencia clave vs exp2: barras a 0% + inyeccion.
@@ -274,7 +274,7 @@ class LiveExperimentSession:
             self.log_lines = [
                 "Barras fijas 45% (constante)",
                 f"Variable: caudal bomba = {flujo:.0f}",
-                "Mira MWe en RED",
+                "Potencia electrica observada en RED",
             ]
 
     def tick(self, state: CoreState) -> bool:
@@ -356,7 +356,7 @@ class LiveExperimentSession:
             self.log_lines = [
                 f"Barras FIJAS 45% | {self.moderation_label}",
                 f"keff={state.keff:.3f} ({drift}) T={state.coolant_temp_celsius:.1f}C",
-                f"MWe={state.electric_power_mwe:.2f} — LIVE adaptaria barras",
+                f"MWe={state.electric_power_mwe:.2f} | sin adaptacion de barras",
             ]
             if self.step_in_phase >= self.steps_per_phase:
                 vida = estimate_mean_neutron_lifetime(200, mean_flight_s=flight)

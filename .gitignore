@@ -152,6 +152,7 @@ activemq-data/
 # Local simulation outputs
 logs/experimentos/
 logs/simulaciones/
+logs/validacion/
 src/scripts/logs/
 
 # Environments
