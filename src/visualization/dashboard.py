@@ -97,9 +97,6 @@ class ReactorDashboard:
         )
 
     def render(self, state: CoreState, ui: dict[str, Any] | None = None) -> bool:
-        if self.headless:
-            return True
-
         ui = ui or {}
         self.mode = ui.get("mode", self.mode)
         self.paused = bool(ui.get("paused", self.paused))
@@ -108,6 +105,9 @@ class ReactorDashboard:
         self.active_experiment = int(ui.get("active_experiment", self.active_experiment))
         if "sim_speed" in ui:
             self.sim_speed = float(ui["sim_speed"])
+
+        if self.headless:
+            return True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

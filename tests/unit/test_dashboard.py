@@ -98,6 +98,12 @@ def test_consume_experiment_click() -> None:
     assert dashboard.consume_experiment_click() is None
 
 
+def test_paused_flag_is_accepted_from_ui() -> None:
+    dashboard = ReactorDashboard(headless=True)
+    assert dashboard.render(CoreState(), ui={"paused": True}) is True
+    assert dashboard.paused is True
+
+
 def test_dashboard_consume_key_clears_buffer(monkeypatch) -> None:
     import src.visualization.dashboard as dashboard_module
 
