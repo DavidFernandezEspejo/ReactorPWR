@@ -37,12 +37,20 @@ def _physics_step(
     allow_scram: bool,
     heat_scale: float = 1.0,
     power_scale: float = 1.0,
+    rod_bias: float = 0.0,
+    clamp_temp_c: float | None = 330.0,
 ) -> None:
+    """Paso fisico.
+
+    rod_bias: desplaza la insercion *efectiva* solo para la fisica (p.ej. moderacion).
+    Barras reales del estado no cambian → demuestra desvio con control fijo.
+    """
     floor = SOURCE_NEUTRONS_SCRAM if state.scram_active else SOURCE_NEUTRONS_LIVE
     state.active_neutrons = max(min(state.active_neutrons, MAX_POPULATION), floor)
+    effective_rods = min(100.0, max(0.0, state.control_rods_pct - rod_bias))
     producidos, destruidos = simulate_neutron_batch(
         initial_neutrons=state.active_neutrons,
-        control_rods_pct=state.control_rods_pct,
+        control_rods_pct=effective_rods,
         scram_active=state.scram_active,
     )
     state.keff = calculate_keff(producidos, destruidos)
@@ -58,7 +66,8 @@ def _physics_step(
         power_per_fission=ACADEMIC_POWER_PER_FISSION * power_scale * scram_heat,
     )
     if not allow_scram:
-        state.coolant_temp_celsius = min(state.coolant_temp_celsius, 330.0)
+        if clamp_temp_c is not None:
+            state.coolant_temp_celsius = min(state.coolant_temp_celsius, clamp_temp_c)
         state.scram_active = False
         return
 
@@ -97,6 +106,7 @@ class LiveExperimentSession:
     _target_rods: float = 45.0
     _mod_heat: float = 1.0
     _mod_power: float = 1.0
+    _rod_bias: float = 0.0
 
     @classmethod
     def create(cls, index: int) -> LiveExperimentSession:
@@ -108,8 +118,8 @@ class LiveExperimentSession:
             ),
             2: (
                 "Tiempo de moderacion",
-                "Con barras fijas, ¿cambia la potencia al variar moderacion?",
-                "Barras=45% constante; variable = mean_flight / moderacion",
+                "Barras fijas 45%: la moderacion desvia keff/T (por eso LIVE adapta)",
+                "Variable = mean_flight; barras NO se adaptan a proposito",
             ),
             3: (
                 "Transitorio / SCRAM",
@@ -168,13 +178,15 @@ class LiveExperimentSession:
                 "keff se mide con muestreo Monte Carlo estable",
             ]
         elif self.index == 2:
-            # Barras fijas a proposito: la variable es la moderacion, no el control.
+            # Barras fijas a proposito: sin adaptar, la moderacion DESVIA el nucleo.
+            # rod_bias > 0 = mas reactividad efectiva (como si hubiera menos barras).
             labels = ("τ_flight alto", "τ_flight medio", "τ_flight bajo")
             flights = (2e-4, 1e-4, 5e-5)
-            # Mejor moderacion (τ bajo) → mas potencia termica/electrica.
-            heat_gains = (0.70, 1.00, 1.35)
-            power_gains = (0.70, 1.00, 1.35)
+            rod_biases = (-22.0, 0.0, 22.0)  # pobre → ok → excesiva moderacion
+            heat_gains = (0.75, 1.00, 1.40)
+            power_gains = (0.75, 1.00, 1.40)
             self._current_flight = flights[self.phase_i]
+            self._rod_bias = rod_biases[self.phase_i]
             self._mod_heat = heat_gains[self.phase_i]
             self._mod_power = power_gains[self.phase_i]
             self._target_rods = 45.0
@@ -182,15 +194,15 @@ class LiveExperimentSession:
             state.active_neutrons = n0
             state.coolant_temp_celsius = 295.0
             state.scram_active = False
-            state.coolant_flow = 18000.0  # caudal fijo; no confundir con moderacion
+            state.coolant_flow = 18000.0
             self.moderation_label = f"{labels[self.phase_i]} = {flights[self.phase_i]:.1e}s"
-            self.banner = f"EXP2: barras=45% fijas | {labels[self.phase_i]}"
+            self.banner = f"EXP2: barras FIJAS 45% | {labels[self.phase_i]} (sin adaptar)"
             self.banner_color = (120, 200, 255)
             self.flow_speed = 0.7 + self.phase_i * 0.35
             self.log_lines = [
-                "Barras fijas 45% (constante de control)",
-                f"Variable: moderacion {labels[self.phase_i]}",
-                "No hace falta control adaptativo aqui",
+                "Barras fijas 45%: NO se adaptan (a proposito)",
+                f"Moderacion {labels[self.phase_i]} → desvia keff/T",
+                "Por eso en LIVE el control mueve barras",
             ]
         elif self.index == 3:
             self._mod_heat = 1.0
@@ -314,26 +326,51 @@ class LiveExperimentSession:
                 self._setup_phase(state)
 
         elif self.index == 2:
+            # Sin clamp bajo: se ve el desvio termico/keff con barras fijas.
             state.control_rods_pct = 45.0
             _physics_step(
                 state,
                 allow_scram=False,
                 heat_scale=self._mod_heat,
                 power_scale=self._mod_power,
+                rod_bias=self._rod_bias,
+                # <350C: no dispara el SCRAM del modelo de estado, pero se ve
+                # el desvio (keff/T) con barras que NO se adaptan.
+                clamp_temp_c=348.0,
             )
             state.control_rods_pct = 45.0
+            state.scram_active = False
             self.samples_mwe.append(state.electric_power_mwe)
+            self.samples_keff.append(state.keff)
+
             flight = getattr(self, "_current_flight", 1e-4)
+            drift = (
+                "supercritico (se descontrola)"
+                if state.keff > 1.03
+                else (
+                    "subcritico (se apaga)"
+                    if state.keff < 0.97
+                    else "cerca de critico"
+                )
+            )
             self.log_lines = [
                 f"Barras FIJAS 45% | {self.moderation_label}",
-                f"({self.step_in_phase}/{self.steps_per_phase}) MWe={state.electric_power_mwe:.2f}",
-                "Cambio de MWe = efecto moderacion, no de barras",
+                f"keff={state.keff:.3f} ({drift}) T={state.coolant_temp_celsius:.1f}C",
+                f"MWe={state.electric_power_mwe:.2f} — LIVE adaptaria barras",
             ]
             if self.step_in_phase >= self.steps_per_phase:
                 vida = estimate_mean_neutron_lifetime(200, mean_flight_s=flight)
                 mean_p = float(np.mean(self.samples_mwe[-20:]))
+                mean_k = float(np.mean(self.samples_keff[-20:]))
                 self.phase_results.append(
-                    {"mean_flight_s": flight, "vida_media_s": vida, "mwe": mean_p}
+                    {
+                        "mean_flight_s": flight,
+                        "vida_media_s": vida,
+                        "mwe": mean_p,
+                        "keff_medio": mean_k,
+                        "temp_final": state.coolant_temp_celsius,
+                        "rod_bias": self._rod_bias,
+                    }
                 )
                 if self.phase_i >= 2:
                     self.result = {
@@ -342,12 +379,17 @@ class LiveExperimentSession:
                         "potencia_media_mwe": float(
                             np.mean([p["mwe"] for p in self.phase_results])
                         ),
+                        "leccion": (
+                            "Con barras fijas, la moderacion desvia keff/T; "
+                            "por eso en LIVE el control es autoadaptativo"
+                        ),
                     }
                     self.status = "done"
-                    self.banner = "EXP2 fin: MWe vs moderacion (barras fijas)"
+                    self.banner = "EXP2 fin: barras fijas → desvio; LIVE adapta"
                     self.banner_color = (80, 220, 140)
-                    self.log_lines = ["CONCLUSION:"] + [
-                        f"flight {p['mean_flight_s']:.1e}s -> {p['mwe']:.2f} MWe"
+                    self.log_lines = ["CONCLUSION: sin adaptar barras hay desvio"] + [
+                        f"flight {p['mean_flight_s']:.1e}s -> "
+                        f"keff={p['keff_medio']:.3f} MWe={p['mwe']:.2f}"
                         for p in self.phase_results
                     ]
                     return False

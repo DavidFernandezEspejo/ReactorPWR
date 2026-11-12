@@ -90,7 +90,11 @@ def test_live_exp2_keeps_rods_fixed_at_45() -> None:
         assert state.control_rods_pct == 45.0
     assert session.status == "done"
     mwes = [p["mwe"] for p in session.result["muestras"]]
+    keffs = [p["keff_medio"] for p in session.result["muestras"]]
     assert max(mwes) > min(mwes), "La moderacion debe cambiar MWe con barras fijas"
+    # τ bajo (mejor moderacion) → keff mayor que τ alto, con barras fijas.
+    assert keffs[-1] > keffs[0]
+    assert "autoadaptativo" in session.result.get("leccion", "")
 
 
 def test_neutron_delta_is_capped_per_step() -> None:
