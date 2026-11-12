@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   lint-and-types:
-    name: Lint + tipos
+    name: 1) Estilo y tipos (Ruff/Mypy)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,14 +26,14 @@ jobs:
           pip install -r requirements.txt
           pip install ruff mypy
 
-      - name: Ruff
+      - name: Ruff (fallos de estilo / imports muertos)
         run: ruff check src/ tests/
 
-      - name: Mypy
+      - name: Mypy (anotaciones de tipos basicas)
         run: PYTHONPATH=. mypy src/ --ignore-missing-imports
 
   unit-tests:
-    name: Unit tests (Py ${{ matrix.python-version }})
+    name: 2) Tests unitarios (Py ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -57,16 +57,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Unitarios
+      - name: Unitarios (funciones aisladas en tests/unit)
         env:
           SDL_VIDEODRIVER: dummy
           PYTHONPATH: .
         run: |
           mkdir -p logs/simulaciones
+          # --cov-fail-under=50: al menos la mitad de lineas de src/ se ejecutan
+          # en estos tests; si baja, el CI falla (codigo sin probar de mas).
           python -m pytest tests/unit -q --cov=src --cov-report=term-missing --cov-fail-under=50
 
   integration-and-validation:
-    name: Integracion + validacion grande
+    name: 3) Integracion + validacion completa
     runs-on: ubuntu-latest
     needs: [lint-and-types, unit-tests]
     steps:
@@ -87,7 +89,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: PDF + pygame smoke
+      - name: Smoke PDF + pygame
         env:
           SDL_VIDEODRIVER: dummy
           PYTHONPATH: .
@@ -99,19 +101,41 @@ jobs:
           fi
           python -c "import pygame; print('pygame-ce', pygame.version.ver)"
 
-      - name: Suite completa (unit + integration + validation)
+      - name: Pytest completo (unit + integration + validation)
         env:
           SDL_VIDEODRIVER: dummy
           PYTHONPATH: .
         run: |
-          mkdir -p logs/simulaciones logs/experimentos
+          mkdir -p logs/simulaciones logs/experimentos logs/validacion
+          # Incluye tests/validation (SCRAM, Monte Carlo, EXP live, PDF).
+          # --cov-fail-under=60: en la suite grande se exige >=60% de lineas
+          # de src/ ejecutadas por los tests (ahora suele estar ~70%).
           python -m pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=60 --durations=20
 
-      - name: Runner de experimentos PDF
+      - name: Runner PDF (run_experiments.py)
         env:
           PYTHONPATH: .
           SDL_VIDEODRIVER: dummy
         run: python src/scripts/run_experiments.py
+
+      - name: Validacion live EXP1-4 (informe + logs academicos)
+        env:
+          PYTHONPATH: .
+          SDL_VIDEODRIVER: dummy
+        run: |
+          mkdir -p logs/validacion logs/simulaciones
+          python -m src.scripts.validate_experiments_report
+          test -f logs/validacion/report_experimentos.json
+          echo "--- Resumen charts ---"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("logs/validacion/report_experimentos.json").read_text(encoding="utf-8"))
+          for idx in (1, 2, 3, 4):
+              exp = report["experimentos"][f"exp{idx}"]
+              print(f"EXP{idx}: status={exp['status']} result_keys={list((exp.get('result') or {}).keys())}")
+          print("charts:", list(report["charts"].keys()))
+          PY
 
       - name: Subir cobertura
         if: always()
