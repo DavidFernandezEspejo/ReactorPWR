@@ -3,7 +3,8 @@ setlocal
 cd /d "%~dp0"
 
 if exist "dist\ReactorPWR.exe" (
-  start "" "%~dp0dist\ReactorPWR.exe"
+  rem CWD = raiz del repo para que logs/ no caiga dentro de dist/
+  start "" /D "%~dp0" "%~dp0dist\ReactorPWR.exe"
   exit /b 0
 )
 

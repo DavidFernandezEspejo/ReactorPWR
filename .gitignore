@@ -154,6 +154,10 @@ logs/experimentos/
 logs/simulaciones/
 logs/validacion/
 src/scripts/logs/
+dist/logs/
+build/
+*.coverage
+.coverage
 
 # Environments
 .env

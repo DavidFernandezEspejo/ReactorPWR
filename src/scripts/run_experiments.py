@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import numpy as np
 
@@ -128,7 +127,12 @@ def experimento_4_flujo(seed: int = 11) -> dict:
 
 
 def main() -> None:
-    out_dir = Path("logs") / "experimentos"
+    from datetime import datetime
+
+    from src.utils.logger import resolve_logs_root
+
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = resolve_logs_root() / "experimentos" / f"pdf_runner_{stamp}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     reporte = {
@@ -140,8 +144,12 @@ def main() -> None:
 
     out_path = out_dir / "resultados_experimentos.json"
     out_path.write_text(json.dumps(reporte, indent=2), encoding="utf-8")
+    # Copia estable de la ultima corrida (facil de abrir).
+    latest = resolve_logs_root() / "experimentos" / "resultados_experimentos.json"
+    latest.write_text(json.dumps(reporte, indent=2), encoding="utf-8")
     print(json.dumps(reporte, indent=2))
     print(f"\nGuardado en: {out_path}")
+    print(f"Ultima copia: {latest}")
 
 
 if __name__ == "__main__":

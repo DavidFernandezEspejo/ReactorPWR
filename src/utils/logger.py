@@ -5,9 +5,38 @@ from __future__ import annotations
 import csv
 import json
 import logging
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+
+def resolve_logs_root() -> Path:
+    """Raiz de logs.
+
+    - Desarrollo: ``logs/`` relativo al CWD (el .bat sitúa el CWD en el repo).
+    - Ejecutable en ``dist/``: escribe en ``<repo>/logs``, no dentro de ``dist/``.
+    - Override: variable de entorno ``REACTORPWR_LOGS_ROOT``.
+    """
+    override = os.environ.get("REACTORPWR_LOGS_ROOT")
+    if override:
+        root = Path(override)
+        root.mkdir(parents=True, exist_ok=True)
+        return root
+
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        if exe_dir.name.lower() == "dist" and (exe_dir.parent / "src").is_dir():
+            root = exe_dir.parent / "logs"
+        else:
+            root = exe_dir / "logs"
+        root.mkdir(parents=True, exist_ok=True)
+        return root
+
+    root = Path("logs")
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 def _fmt_state(state: dict[str, Any]) -> str:
@@ -39,7 +68,12 @@ class SimulationLogger:
     ) -> None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.run_name = run_name
-        self.log_dir = Path("logs/simulaciones") / f"{run_name}_{timestamp}"
+        self.logs_root = resolve_logs_root()
+        self.log_dir = self.logs_root / "simulaciones" / f"{run_name}_{timestamp}"
+        # Suite minima desde el arranque (no carpetas vacias huerfanas).
+        (self.logs_root / "simulaciones").mkdir(parents=True, exist_ok=True)
+        (self.logs_root / "experimentos").mkdir(parents=True, exist_ok=True)
+        (self.logs_root / "validacion").mkdir(parents=True, exist_ok=True)
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
         self.logger = logging.getLogger(f"reactorpwr.{run_name}.{timestamp}")

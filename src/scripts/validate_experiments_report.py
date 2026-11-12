@@ -140,7 +140,9 @@ def write_report(
     report: dict[str, Any],
     out_dir: Path | None = None,
 ) -> Path:
-    out = out_dir or Path("logs/validacion")
+    from src.utils.logger import resolve_logs_root
+
+    out = out_dir or (resolve_logs_root() / "validacion")
     out.mkdir(parents=True, exist_ok=True)
     path = out / "report_experimentos.json"
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
